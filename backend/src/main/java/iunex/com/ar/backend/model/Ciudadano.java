@@ -1,7 +1,10 @@
 package iunex.com.ar.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "ciudadanos")
@@ -26,12 +29,25 @@ public class Ciudadano {
     // Relación 1 a 1 con la cuenta de usuario
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, unique = true)
+    @JsonIgnore
     private User user;
 
     // Relación Muchos a 1 con el Barrio
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "barrio_id", referencedColumnName = "id", nullable = false)
     private Barrio barrio;
+
+    @OneToOne(mappedBy = "presidente", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private CentroVecinal centroVecinalPresidido;
+
+    @OneToMany(mappedBy = "ciudadano", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Apoyo> apoyos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "ciudadano", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Observacion> observaciones = new ArrayList<>();
 
     // Getters y Setters
     public Long getId() {
@@ -88,5 +104,29 @@ public class Ciudadano {
 
     public void setBarrio(Barrio barrio) {
         this.barrio = barrio;
+    }
+
+    public CentroVecinal getCentroVecinalPresidido() {
+        return centroVecinalPresidido;
+    }
+
+    public void setCentroVecinalPresidido(CentroVecinal centroVecinalPresidido) {
+        this.centroVecinalPresidido = centroVecinalPresidido;
+    }
+
+    public List<Apoyo> getApoyos() {
+        return apoyos;
+    }
+
+    public void setApoyos(List<Apoyo> apoyos) {
+        this.apoyos = apoyos;
+    }
+
+    public List<Observacion> getObservaciones() {
+        return observaciones;
+    }
+
+    public void setObservaciones(List<Observacion> observaciones) {
+        this.observaciones = observaciones;
     }
 }
