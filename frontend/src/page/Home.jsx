@@ -78,8 +78,8 @@ export default function Home() {
                         ))}
                     </nav>
 
-                    <Link className="public-header__cta" to="/register">
-                        Registrarse / Ingresar
+                    <Link className="public-header__cta" to="/login">
+                        Iniciar sesión
                     </Link>
                 </div>
             </header>

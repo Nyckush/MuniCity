@@ -11,6 +11,8 @@ public interface CiudadanoRepository extends JpaRepository<Ciudadano, Long> {
     // Para buscar un ciudadano por su documento
     Optional<Ciudadano> findByDni(String dni);
 
+    Optional<Ciudadano> findByUserId(Long userId);
+
     // Para verificar rápidamente si el DNI ya está en uso
     boolean existsByDni(String dni);
 }

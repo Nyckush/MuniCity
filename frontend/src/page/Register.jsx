@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Building2, CalendarDays, CheckCircle2, ChevronLeft, Landmark, LoaderCircle, Mail, ShieldCheck, UserRound } from "lucide-react";
 
 import api from "@/api/axios";
@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { saveStoredAuth } from "@/lib/auth";
+
+
 
 const initialForm = {
     email: "",
@@ -26,8 +29,11 @@ const highlights = [
 ];
 
 export default function Register() {
+    const navigate = useNavigate();
     const [form, setForm] = useState(initialForm);
     const [barrios, setBarrios] = useState([]);
+    const [barrioQuery, setBarrioQuery] = useState("");
+    const [isBarrioOpen, setIsBarrioOpen] = useState(false);
     const [loadingBarrios, setLoadingBarrios] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
@@ -56,6 +62,35 @@ export default function Register() {
         }));
     };
 
+    const normalizedBarrioQuery = barrioQuery.trim().toLowerCase();
+    const filteredBarrios = barrios.filter((barrio) =>
+        barrio.nombre.toLowerCase().includes(normalizedBarrioQuery)
+    );
+
+    const handleBarrioInputChange = (event) => {
+        const value = event.target.value;
+        setBarrioQuery(value);
+        setIsBarrioOpen(true);
+
+        const exactMatch = barrios.find(
+            (barrio) => barrio.nombre.trim().toLowerCase() === value.trim().toLowerCase()
+        );
+
+        setForm((current) => ({
+            ...current,
+            barrioId: exactMatch ? String(exactMatch.id) : "",
+        }));
+    };
+
+    const handleBarrioSelect = (barrio) => {
+        setBarrioQuery(barrio.nombre);
+        setForm((current) => ({
+            ...current,
+            barrioId: String(barrio.id),
+        }));
+        setIsBarrioOpen(false);
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         setError("");
@@ -74,18 +109,31 @@ export default function Register() {
         setSubmitting(true);
 
         try {
+            const trimmedEmail = form.email.trim();
+            const trimmedNombreCompleto = form.nombreCompleto.trim();
+            const trimmedApellido = form.apellido.trim();
+            const trimmedDni = form.dni.trim();
+
             await api.post("/ciudadanos/registrar", {
-                email: form.email.trim(),
+                email: trimmedEmail,
                 password: form.password,
-                nombreCompleto: form.nombreCompleto.trim(),
-                apellido: form.apellido.trim(),
-                dni: form.dni.trim(),
+                nombreCompleto: trimmedNombreCompleto,
+                apellido: trimmedApellido,
+                dni: trimmedDni,
                 fechaNacimiento: form.fechaNacimiento,
                 barrioId: Number(form.barrioId),
             });
 
-            setSuccess("Tu cuenta fue registrada correctamente. Ya podés continuar con el ingreso.");
+            const loginResponse = await api.post("/auth/login", {
+                email: trimmedEmail,
+                password: form.password,
+            });
+
+            saveStoredAuth(loginResponse.data);
+            setSuccess("Tu cuenta fue registrada correctamente. Redirigiendo...");
             setForm(initialForm);
+            setBarrioQuery("");
+            navigate("/dashboard");
         } catch (submitError) {
             setError(submitError.response?.data || "No se pudo completar el registro.");
         } finally {
@@ -94,93 +142,48 @@ export default function Register() {
     };
 
     return (
-        <main className="min-h-screen bg-[linear-gradient(180deg,#eef8ff_0%,#f7fbff_55%,#ffffff_100%)] px-4 py-8 sm:px-6 lg:px-8">
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                    <Link
-                        to="/"
-                        className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200 backdrop-blur"
-                    >
-                        <ChevronLeft size={16} />
-                        Volver al inicio
-                    </Link>
+        <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_left_center,rgba(119,181,246,0.18),transparent_20%),radial-gradient(circle_at_right_top,rgba(42,197,201,0.18),transparent_24%),linear-gradient(180deg,#f2fbff_0%,#edf8ff_45%,#f8fcff_100%)] px-2 py-8 sm:px-6 lg:px-8">
+            <div
+                aria-hidden="true"
+                className="absolute left-[-4rem] top-[-2.5rem] h-44 w-72 rotate-[-8deg] rounded-b-[10rem] rounded-t-none bg-[linear-gradient(135deg,rgba(41,116,214,0.9),rgba(35,209,195,0.84))] opacity-95"
+            />
+            <div
+                aria-hidden="true"
+                className="absolute right-[-4rem] top-[-2.5rem] h-44 w-72 rotate-[8deg] rounded-b-[10rem] rounded-t-none bg-[linear-gradient(135deg,rgba(34,122,219,0.86),rgba(25,203,198,0.82))] opacity-95"
+            />
 
-                    <img
-                        src="/LogoMunicity.png"
-                        alt="Logo de Municity"
-                        className="h-12 w-auto object-contain"
-                    />
+            <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-6">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  
+
+                   
                 </div>
 
-                <section className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
-                    <Card className="overflow-hidden border-0 bg-[linear-gradient(160deg,#0f3f74_0%,#187fcf_58%,#27c7c5_100%)] py-0 text-white shadow-[0_24px_70px_rgba(20,79,129,0.24)]">
-                        <CardContent className="relative flex h-full flex-col justify-between gap-8 px-8 py-8">
-                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.14),transparent_24%)]" />
-
-                            <div className="relative space-y-5">
-                                <span className="inline-flex w-fit items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/90">
-                                    Registro ciudadano
-                                </span>
-
-                                <div className="space-y-3">
-                                    <h1 className="max-w-md text-4xl font-semibold leading-tight tracking-[-0.05em] sm:text-5xl">
-                                        Sumate a la comunidad digital de Municity.
-                                    </h1>
-                                    <p className="max-w-lg text-base leading-7 text-cyan-50/90">
-                                        Creá tu cuenta para participar en propuestas barriales,
-                                        comunicar observaciones y seguir de cerca lo que pasa en tu
-                                        comunidad.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="relative grid gap-4">
-                                {highlights.map((item) => (
-                                    <div
-                                        key={item}
-                                        className="flex items-start gap-3 rounded-2xl border border-white/14 bg-white/10 px-4 py-4 backdrop-blur-sm"
-                                    >
-                                        <CheckCircle2 className="mt-0.5 shrink-0 text-cyan-100" size={20} />
-                                        <p className="text-sm leading-6 text-white/92">{item}</p>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="relative grid grid-cols-3 gap-3 text-center">
-                                <div className="rounded-2xl border border-white/12 bg-white/10 px-3 py-4">
-                                    <UserRound className="mx-auto mb-2 text-cyan-100" size={20} />
-                                    <p className="text-xs font-medium text-white/90">Ciudadano</p>
-                                </div>
-                                <div className="rounded-2xl border border-white/12 bg-white/10 px-3 py-4">
-                                    <Landmark className="mx-auto mb-2 text-cyan-100" size={20} />
-                                    <p className="text-xs font-medium text-white/90">Barrio</p>
-                                </div>
-                                <div className="rounded-2xl border border-white/12 bg-white/10 px-3 py-4">
-                                    <ShieldCheck className="mx-auto mb-2 text-cyan-100" size={20} />
-                                    <p className="text-xs font-medium text-white/90">Cuenta segura</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-0 bg-white/88 py-0 shadow-[0_24px_70px_rgba(15,62,106,0.12)] ring-1 ring-slate-200/70 backdrop-blur">
-                        <CardHeader className="space-y-3 px-8 pt-8">
-                            <div className="flex items-center gap-3">
-                                <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 ring-1 ring-sky-100">
-                                    <Building2 size={22} />
-                                </div>
-                                <div>
-                                    <CardTitle className="text-2xl font-semibold text-slate-900">
-                                        Crear cuenta
+                <section className="flex w-full justify-center">
+                    <Card className="w-full max-w-3xl border-0 bg-white/88 py-0 shadow-[0_24px_70px_rgba(15,62,106,0.12)] ring-1 ring-slate-200/70 backdrop-blur">
+                    
+                        <CardHeader className="space-y-3 px-4 pt-6 sm:px-8 sm:pt-8">
+                            <div className="flex items-center gap-3 flex-col">
+                        
+                                    <img
+                        src="/LogoMunicity.png"
+                        alt="Logo de Municity"
+                        className="h-12 w-auto object-contain mb-10"
+                    />
+                         <div className="flex items-start gap-4   rounded-2xl w-full justify-center ">
+                              
+                              
+                                    <CardTitle  style={{ display: "flex", alignItems: "center", gap: "8px" }}> 
+                                          <i class="bi bi-person-fill-add" style={{ fontSize: "24px", color: "darkgray" }}></i>  
+                                          <p className="m-0" style={{ color: "darkgray", letterSpacing: "3px" }}>Crear Cuenta</p> 
                                     </CardTitle>
-                                    <CardDescription className="mt-1 text-sm leading-6 text-slate-500">
-                                        Completá tus datos para registrarte como ciudadano.
-                                    </CardDescription>
-                                </div>
+                                   
+                               
                             </div>
+                        </div>
                         </CardHeader>
 
-                        <CardContent className="px-8 pb-8">
+                        <CardContent className="px-4 pb-6 sm:px-8 sm:pb-8">
                             <form className="space-y-6" onSubmit={handleSubmit}>
                                 <div className="grid gap-5 md:grid-cols-2">
                                     <div className="space-y-2 md:col-span-2">
@@ -240,24 +243,50 @@ export default function Register() {
 
                                     <div className="space-y-2">
                                         <Label htmlFor="barrioId">Barrio</Label>
-                                        <select
+                                        <div className="relative">
+                                            <Input
+                                                id="barrioId"
+                                                name="barrioId"
+                                                value={barrioQuery}
+                                                onChange={handleBarrioInputChange}
+                                                onFocus={() => setIsBarrioOpen(true)}
+                                                onBlur={() => {
+                                                    window.setTimeout(() => setIsBarrioOpen(false), 150);
+                                                }}
+                                                placeholder={loadingBarrios ? "Cargando barrios..." : "Escribí para buscar tu barrio"}
+                                                required
+                                                disabled={loadingBarrios}
+                                                className="h-11 rounded-xl border-slate-200 bg-white"
+                                                autoComplete="off"
+                                            />
+                                            {isBarrioOpen && !loadingBarrios ? (
+                                                <div className="absolute z-20 mt-2 max-h-56 w-full overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_18px_35px_rgba(15,62,106,0.12)]">
+                                                    {filteredBarrios.length > 0 ? (
+                                                        filteredBarrios.map((barrio) => (
+                                                            <button
+                                                                key={barrio.id}
+                                                                type="button"
+                                                                onClick={() => handleBarrioSelect(barrio)}
+                                                                className="w-full rounded-xl px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-sky-50 hover:text-sky-700"
+                                                            >
+                                                                {barrio.nombre}
+                                                            </button>
+                                                        ))
+                                                    ) : (
+                                                        <p className="px-3 py-2 text-sm text-slate-500">
+                                                            No se encontraron barrios.
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            ) : null}
+                                        </div>
+                                        <input
+                                            type="hidden"
                                             id="barrioId"
                                             name="barrioId"
                                             value={form.barrioId}
-                                            onChange={handleChange}
-                                            required
-                                            disabled={loadingBarrios}
-                                            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-100"
-                                        >
-                                            <option value="">
-                                                {loadingBarrios ? "Cargando barrios..." : "Seleccioná un barrio"}
-                                            </option>
-                                            {barrios.map((barrio) => (
-                                                <option key={barrio.id} value={barrio.id}>
-                                                    {barrio.nombre}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            readOnly
+                                        />
                                     </div>
 
                                     <div className="space-y-2 md:col-span-2">
@@ -318,19 +347,15 @@ export default function Register() {
                                     </div>
                                 ) : null}
 
-                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                    <p className="text-sm text-slate-500">
-                                        ¿Ya tenés cuenta?{" "}
-                                        <Link to="/login" className="font-medium text-sky-700 hover:text-sky-800">
-                                            Ingresá acá
-                                        </Link>
-                                    </p>
+                                <div className="flex flex-col gap-3  sm:items-center justify-center">
+                                 
 
                                     <Button
                                         type="submit"
                                         size="lg"
                                         disabled={submitting || loadingBarrios}
-                                        className="h-11 rounded-xl bg-[linear-gradient(135deg,#2177d5,#2db6d5)] px-6 text-white shadow-[0_18px_35px_rgba(33,119,213,0.24)] hover:opacity-95"
+                                        className="h-11 w-full rounded-xl bg-[linear-gradient(135deg,#2177d5,#2db6d5)] px-8 text-white shadow-[0_18px_35px_rgba(33,119,213,0.24)] hover:opacity-95 sm:w-auto sm:min-w-[220px]"
+                                      style={{letterSpacing: "2px"}}
                                     >
                                         {submitting ? (
                                             <>
@@ -341,9 +366,19 @@ export default function Register() {
                                             "Crear cuenta"
                                         )}
                                     </Button>
+
+                                         <Link
+                        to="/"
+                        className="inline-flex items-center gap-2   px-4 py-2 text-sm font-medium text-slate-700   "
+                    >
+                        <ChevronLeft size={16} />
+                        Volver al inicio
+                    </Link>
                                 </div>
                             </form>
                         </CardContent>
+
+                     
                     </Card>
                 </section>
             </div>

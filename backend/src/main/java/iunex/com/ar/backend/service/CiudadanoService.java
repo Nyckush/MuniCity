@@ -8,6 +8,7 @@ import iunex.com.ar.backend.repository.BarrioRepository;
 import iunex.com.ar.backend.repository.CiudadanoRepository;
 import iunex.com.ar.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,11 +24,16 @@ public class CiudadanoService {
     @Autowired
     private BarrioRepository barrioRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Transactional
     public void registrarCiudadano(RegistroCiudadanoDTO dto) {
 
+        String emailNormalizado = dto.getEmail().trim().toLowerCase();
+
         // 1. Validaciones previas
-        if (userRepository.existsByEmail(dto.getEmail())) {
+        if (userRepository.existsByEmail(emailNormalizado)) {
             throw new RuntimeException("El correo electrónico ya está registrado.");
         }
 
@@ -41,11 +47,8 @@ public class CiudadanoService {
 
         // 3. Crear y guardar el USUARIO (La cuenta de acceso)
         User usuario = new User();
-        usuario.setEmail(dto.getEmail());
-
-        // NOTA: Por ahora va en texto plano. Cuando agregues Spring Security,
-        // acá usarás passwordEncoder.encode(dto.getPassword())
-        usuario.setPassword(dto.getPassword());
+        usuario.setEmail(emailNormalizado);
+        usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
         usuario.setRole("ROLE_CIUDADANO"); // Rol por defecto
 
         // Guardamos el usuario. JPA automáticamente le genera el ID y nos devuelve el objeto actualizado
