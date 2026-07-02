@@ -1,14 +1,19 @@
 package iunex.com.ar.backend.controller;
 
-import iunex.com.ar.backend.dto.ObservacionDTO;
-import iunex.com.ar.backend.model.Observacion;
+import iunex.com.ar.backend.dto.ObservacionRequestDTO;
 import iunex.com.ar.backend.service.ObservacionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/observaciones")
@@ -18,18 +23,48 @@ public class ObservacionController {
     @Autowired
     private ObservacionService observacionService;
 
-    @PostMapping
-    public ResponseEntity<?> crearObservacion(@RequestBody ObservacionDTO dto) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> crearObservacion(@ModelAttribute ObservacionRequestDTO dto, Authentication authentication) {
         try {
-            Observacion observacion = observacionService.guardarObservacion(dto);
-            return new ResponseEntity<>(observacion, HttpStatus.CREATED);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(observacionService.guardarObservacion(dto, authentication), HttpStatus.CREATED);
+        } catch (RuntimeException exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping
-    public ResponseEntity<List<Observacion>> listarObservaciones() {
-        return new ResponseEntity<>(observacionService.obtenerTodas(), HttpStatus.OK);
+    public ResponseEntity<?> listarObservaciones(Authentication authentication) {
+        try {
+            return new ResponseEntity<>(observacionService.listarObservaciones(authentication), HttpStatus.OK);
+        } catch (RuntimeException exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/mis-observaciones")
+    public ResponseEntity<?> listarMisObservaciones(Authentication authentication) {
+        try {
+            return new ResponseEntity<>(observacionService.listarMisObservaciones(authentication), HttpStatus.OK);
+        } catch (RuntimeException exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/recibidas")
+    public ResponseEntity<?> listarObservacionesRecibidas(Authentication authentication) {
+        try {
+            return new ResponseEntity<>(observacionService.listarObservacionesRecibidas(authentication), HttpStatus.OK);
+        } catch (RuntimeException exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/{observacionId}")
+    public ResponseEntity<?> obtenerObservacion(@PathVariable Long observacionId, Authentication authentication) {
+        try {
+            return new ResponseEntity<>(observacionService.obtenerObservacion(observacionId, authentication), HttpStatus.OK);
+        } catch (RuntimeException exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 }

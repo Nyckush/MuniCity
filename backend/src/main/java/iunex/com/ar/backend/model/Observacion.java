@@ -1,9 +1,12 @@
 package iunex.com.ar.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "observaciones")
@@ -31,9 +34,21 @@ public class Observacion {
     @Column(nullable = false)
     private EstadoObservacion estado;
 
+    @Column(name = "ubicacion_enlace", length = 1000)
+    private String ubicacionEnlace;
+
+    @OneToMany(mappedBy = "observacion", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<ObservacionImagen> imagenes = new ArrayList<>();
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public void addImagen(ObservacionImagen imagen) {
+        imagenes.add(imagen);
+        imagen.setObservacion(this);
+    }
 
     public Long getId() {
         return id;
@@ -81,6 +96,22 @@ public class Observacion {
 
     public void setEstado(EstadoObservacion estado) {
         this.estado = estado;
+    }
+
+    public String getUbicacionEnlace() {
+        return ubicacionEnlace;
+    }
+
+    public void setUbicacionEnlace(String ubicacionEnlace) {
+        this.ubicacionEnlace = ubicacionEnlace;
+    }
+
+    public List<ObservacionImagen> getImagenes() {
+        return imagenes;
+    }
+
+    public void setImagenes(List<ObservacionImagen> imagenes) {
+        this.imagenes = imagenes;
     }
 
     public LocalDateTime getCreatedAt() {

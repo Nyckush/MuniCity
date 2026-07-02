@@ -3,6 +3,7 @@ package iunex.com.ar.backend.repository;
 import iunex.com.ar.backend.model.Ciudadano;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -12,6 +13,8 @@ public interface CiudadanoRepository extends JpaRepository<Ciudadano, Long> {
     Optional<Ciudadano> findByDni(String dni);
 
     Optional<Ciudadano> findByUserId(Long userId);
+
+    List<Ciudadano> findAllByBarrioIdOrderByIdAsc(Long barrioId);
 
     // Para verificar rápidamente si el DNI ya está en uso
     boolean existsByDni(String dni);

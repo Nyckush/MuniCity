@@ -3,6 +3,7 @@ package iunex.com.ar.backend.config;
 import iunex.com.ar.backend.model.Barrio;
 import iunex.com.ar.backend.repository.BarrioRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,6 +12,7 @@ import java.util.List;
 @Configuration
 public class BarrioSeeder {
 
+    @Order(1)
     @Bean
     public CommandLineRunner seedBarrios(BarrioRepository barrioRepository) {
         return args -> {

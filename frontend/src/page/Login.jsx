@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { saveStoredAuth } from "@/lib/auth";
+import { getDashboardRouteByRole, saveStoredAuth } from "@/lib/auth";
 
 const initialForm = {
     email: "",
@@ -43,7 +43,7 @@ export default function Login() {
 
             saveStoredAuth(response.data);
             setMessage("Inicio de sesión exitoso. Redirigiendo...");
-            navigate("/dashboard");
+            navigate(getDashboardRouteByRole(response.data.role));
         } catch (submitError) {
             setError(submitError.response?.data || "No se pudo iniciar sesión.");
         } finally {
@@ -79,7 +79,7 @@ export default function Login() {
                                     </CardTitle>
                                 </div>
                                 <CardDescription className="text-center text-sm leading-6 text-slate-500">
-                                    Ingresá con tu cuenta ciudadana para acceder a la plataforma.
+                                    Ingresá con tu cuenta ciudadana o de municipio para acceder a la plataforma.
                                 </CardDescription>
                             </div>
                         </CardHeader>

@@ -47,6 +47,10 @@ public class Ciudadano {
 
     @OneToMany(mappedBy = "ciudadano", fetch = FetchType.LAZY)
     @JsonIgnore
+    private List<ApoyoNota> apoyosNotas = new ArrayList<>();
+
+    @OneToMany(mappedBy = "ciudadano", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Observacion> observaciones = new ArrayList<>();
 
     // Getters y Setters
@@ -120,6 +124,14 @@ public class Ciudadano {
 
     public void setApoyos(List<Apoyo> apoyos) {
         this.apoyos = apoyos;
+    }
+
+    public List<ApoyoNota> getApoyosNotas() {
+        return apoyosNotas;
+    }
+
+    public void setApoyosNotas(List<ApoyoNota> apoyosNotas) {
+        this.apoyosNotas = apoyosNotas;
     }
 
     public List<Observacion> getObservaciones() {

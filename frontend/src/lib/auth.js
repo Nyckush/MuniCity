@@ -49,3 +49,11 @@ export function getValidStoredAuth() {
 
     return auth;
 }
+
+export function getDashboardRouteByRole(role) {
+    if (role === "ROLE_MUNICIPIO") {
+        return "/municipio/dashboard";
+    }
+
+    return "/dashboard";
+}

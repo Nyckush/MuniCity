@@ -6,8 +6,10 @@ public class AuthResponseDTO {
     private String email;
     private String role;
     private Long ciudadanoId;
+    private Long municipioId;
     private String nombreCompleto;
     private String apellido;
+    private String municipioNombre;
     private Long barrioId;
     private String barrioNombre;
     private String token;
@@ -46,6 +48,14 @@ public class AuthResponseDTO {
         this.ciudadanoId = ciudadanoId;
     }
 
+    public Long getMunicipioId() {
+        return municipioId;
+    }
+
+    public void setMunicipioId(Long municipioId) {
+        this.municipioId = municipioId;
+    }
+
     public String getNombreCompleto() {
         return nombreCompleto;
     }
@@ -60,6 +70,14 @@ public class AuthResponseDTO {
 
     public void setApellido(String apellido) {
         this.apellido = apellido;
+    }
+
+    public String getMunicipioNombre() {
+        return municipioNombre;
+    }
+
+    public void setMunicipioNombre(String municipioNombre) {
+        this.municipioNombre = municipioNombre;
     }
 
     public Long getBarrioId() {

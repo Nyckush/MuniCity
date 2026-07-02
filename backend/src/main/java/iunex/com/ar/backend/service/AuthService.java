@@ -3,8 +3,10 @@ package iunex.com.ar.backend.service;
 import iunex.com.ar.backend.dto.AuthResponseDTO;
 import iunex.com.ar.backend.dto.LoginRequestDTO;
 import iunex.com.ar.backend.model.Ciudadano;
+import iunex.com.ar.backend.model.Municipio;
 import iunex.com.ar.backend.model.User;
 import iunex.com.ar.backend.repository.CiudadanoRepository;
+import iunex.com.ar.backend.repository.MunicipioRepository;
 import iunex.com.ar.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -24,10 +26,17 @@ public class AuthService {
     private CiudadanoRepository ciudadanoRepository;
 
     @Autowired
+    private MunicipioRepository municipioRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
     private JwtService jwtService;
+
+    private boolean isCitizenRole(String role) {
+        return "ROLE_CIUDADANO".equals(role) || "ROLE_PRESIDENTE".equals(role);
+    }
 
     @Transactional
     public AuthResponseDTO login(LoginRequestDTO dto) {
@@ -50,13 +59,10 @@ public class AuthService {
 
         migrateLegacyPasswordIfNeeded(user, dto.getPassword());
 
-        Ciudadano ciudadano = ciudadanoRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("No se encontró un perfil ciudadano asociado."));
-
         String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getRole());
         Instant expiration = jwtService.extractExpiration(token);
 
-        AuthResponseDTO response = buildAuthResponse(user, ciudadano);
+        AuthResponseDTO response = buildAuthResponse(user);
         response.setToken(token);
         response.setExpiresAt(expiration.toEpochMilli());
         response.setMessage("Inicio de sesión exitoso.");
@@ -73,10 +79,7 @@ public class AuthService {
         User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado."));
 
-        Ciudadano ciudadano = ciudadanoRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("No se encontró un perfil ciudadano asociado."));
-
-        return buildAuthResponse(user, ciudadano);
+        return buildAuthResponse(user);
     }
 
     private boolean passwordMatches(String rawPassword, String storedPassword) {
@@ -104,16 +107,34 @@ public class AuthService {
         }
     }
 
-    private AuthResponseDTO buildAuthResponse(User user, Ciudadano ciudadano) {
+    private AuthResponseDTO buildAuthResponse(User user) {
         AuthResponseDTO response = new AuthResponseDTO();
         response.setUserId(user.getId());
         response.setEmail(user.getEmail());
         response.setRole(user.getRole());
-        response.setCiudadanoId(ciudadano.getId());
-        response.setNombreCompleto(ciudadano.getNombreCompleto());
-        response.setApellido(ciudadano.getApellido());
-        response.setBarrioId(ciudadano.getBarrio().getId());
-        response.setBarrioNombre(ciudadano.getBarrio().getNombre());
-        return response;
+
+        if (isCitizenRole(user.getRole())) {
+            Ciudadano ciudadano = ciudadanoRepository.findByUserId(user.getId())
+                    .orElseThrow(() -> new RuntimeException("No se encontró un perfil ciudadano asociado."));
+
+            response.setCiudadanoId(ciudadano.getId());
+            response.setNombreCompleto(ciudadano.getNombreCompleto());
+            response.setApellido(ciudadano.getApellido());
+            response.setBarrioId(ciudadano.getBarrio().getId());
+            response.setBarrioNombre(ciudadano.getBarrio().getNombre());
+            return response;
+        }
+
+        if ("ROLE_MUNICIPIO".equals(user.getRole())) {
+            Municipio municipio = municipioRepository.findByUserId(user.getId())
+                    .orElseThrow(() -> new RuntimeException("No se encontró un perfil de municipio asociado."));
+
+            response.setMunicipioId(municipio.getId());
+            response.setMunicipioNombre(municipio.getNombre());
+            response.setNombreCompleto(municipio.getNombre());
+            return response;
+        }
+
+        throw new RuntimeException("El rol del usuario no está soportado por el sistema.");
     }
 }

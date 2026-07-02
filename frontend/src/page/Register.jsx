@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { saveStoredAuth } from "@/lib/auth";
+import { getDashboardRouteByRole, saveStoredAuth } from "@/lib/auth";
 
 
 
@@ -133,7 +133,7 @@ export default function Register() {
             setSuccess("Tu cuenta fue registrada correctamente. Redirigiendo...");
             setForm(initialForm);
             setBarrioQuery("");
-            navigate("/dashboard");
+            navigate(getDashboardRouteByRole(loginResponse.data.role));
         } catch (submitError) {
             setError(submitError.response?.data || "No se pudo completar el registro.");
         } finally {
