@@ -1,8 +1,10 @@
 import axios from "axios";
 import { clearStoredAuth, getValidStoredAuth } from "@/lib/auth";
 
+const apiBaseUrl = import.meta.env.VITE_API_URL?.trim() || "/api";
+
 const api = axios.create({
-    baseURL: "/api",
+    baseURL: apiBaseUrl,
     headers: {
         "Content-Type": "application/json",
     },

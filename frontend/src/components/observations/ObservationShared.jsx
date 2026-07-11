@@ -9,6 +9,8 @@ import {
 
 import { Button } from "@/components/ui/button";
 
+const uploadsBaseUrl = import.meta.env.VITE_UPLOADS_BASE_URL?.trim() || "";
+
 export const initialObservationForm = {
     titulo: "",
     descripcion: "",
@@ -53,7 +55,15 @@ export const toUploadUrl = (path) => {
         return path;
     }
 
-    return path;
+    if (!uploadsBaseUrl) {
+        return path;
+    }
+
+    const normalizedBaseUrl = uploadsBaseUrl.endsWith("/")
+        ? uploadsBaseUrl.slice(0, -1)
+        : uploadsBaseUrl;
+
+    return `${normalizedBaseUrl}${path.startsWith("/") ? path : `/${path}`}`;
 };
 
 export function ObservationCard({
