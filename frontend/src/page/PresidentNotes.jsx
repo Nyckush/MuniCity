@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Eye, FileText, Globe2, HandHeart, Handshake, LoaderCircle, MapPin, MessageCircle, NotebookPen, X } from "lucide-react";
+import { ChevronDown, Eye, FileText, HandHeart, Handshake, LoaderCircle, MapPin, MessageCircle, NotebookPen, Share2, X } from "lucide-react";
 
 import api from "@/api/axios";
 import Navbar from "@/components/Navbar";
@@ -12,13 +12,18 @@ import { clearStoredAuth, getValidStoredAuth, saveStoredAuth } from "@/lib/auth"
 import { citizenNavigationItems } from "@/lib/citizenNavigation";
 import { generateNotePdfBlob } from "@/lib/notePdf";
 
+const runtimeConfig =
+    typeof window !== "undefined" && window.__APP_CONFIG__
+        ? window.__APP_CONFIG__
+        : {};
+
 const initialNoteForm = {
     titulo: "",
     contenido: "",
     categoria: "COMUNICADO",
     mostrarUbicacion: false,
-    mostrarWhatsApp: false,
-    mostrarFacebook: false,
+    mostrarWhatsApp: true,
+    mostrarFacebook: true,
 };
 
 const noteScopeOptions = [
@@ -202,10 +207,15 @@ function NoteList({
     loading,
     onSupport,
     onPreview,
+    onShareWhatsApp,
+    onShareFacebook,
     supportingNoteId,
     topSupport,
     highlightedNoteId,
+    canShareNote,
 }) {
+    const [openShareMenuId, setOpenShareMenuId] = useState(null);
+
     if (loading) {
         return (
             <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-6 text-sm text-slate-500 ring-1 ring-slate-200">
@@ -322,6 +332,49 @@ function NoteList({
                             Ver nota
                         </Button>
                     </div>
+                    {canShareNote?.(note) ? (
+                        <div className="relative border-l border-slate-200 pl-3">
+                            <Button
+                                type="button"
+                                onClick={() =>
+                                    setOpenShareMenuId((current) =>
+                                        current === note.id ? null : note.id
+                                    )
+                                }
+                                className="h-12 bg-transparent px-8 text-base font-medium text-emerald-700 hover:bg-emerald-50"
+                            >
+                                <Share2 size={16} />
+                                Compartir
+                                <ChevronDown size={16} />
+                            </Button>
+                            {openShareMenuId === note.id ? (
+                                <div className="absolute left-3 top-[calc(100%+0.5rem)] z-20 min-w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_24px_60px_rgba(15,62,106,0.16)]">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setOpenShareMenuId(null);
+                                            onShareWhatsApp(note);
+                                        }}
+                                        className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700"
+                                    >
+                                        <i className="bi bi-whatsapp text-base" aria-hidden="true" />
+                                        Compartir por WhatsApp
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setOpenShareMenuId(null);
+                                            onShareFacebook(note);
+                                        }}
+                                        className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-sky-50 hover:text-sky-700"
+                                    >
+                                        <i className="bi bi-facebook text-base" aria-hidden="true" />
+                                        Compartir por Facebook
+                                    </button>
+                                </div>
+                            ) : null}
+                        </div>
+                    ) : null}
                 </div>
             </article>
         );
@@ -519,6 +572,42 @@ export default function PresidentNotes() {
         } finally {
             setPreviewLoading(false);
         }
+    };
+
+    const buildPublicShareUrl = (noteId) => {
+        const apiBaseUrl = runtimeConfig.VITE_API_URL?.trim() || import.meta.env.VITE_API_URL?.trim() || "/api";
+
+        if (apiBaseUrl.startsWith("http://") || apiBaseUrl.startsWith("https://")) {
+            return `${apiBaseUrl.replace(/\/api\/?$/, "")}/notas/compartir/${noteId}`;
+        }
+
+        return `${window.location.origin}/notas/compartir/${noteId}`;
+    };
+
+    const canShareNote = (note) =>
+        auth?.role === "ROLE_PRESIDENTE" &&
+        note.autorCiudadanoId === auth?.ciudadanoId;
+
+    const buildShareMessage = (note) => {
+        const noteUrl = buildPublicShareUrl(note.id);
+        return [
+            `Nueva nota publicada por ${note.centroVecinalNombre}.`,
+            `Leela y apoyala desde este enlace:`,
+            noteUrl,
+        ].join("\n");
+    };
+
+    const handleShareNoteWhatsApp = (note) => {
+        const message = buildShareMessage(note);
+
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    };
+
+    const handleShareNoteFacebook = (note) => {
+        const noteUrl = buildPublicShareUrl(note.id);
+        const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(noteUrl)}`;
+        window.open(facebookUrl, "_blank", "noopener,noreferrer");
     };
 
     const handleClosePreview = () => {
@@ -778,47 +867,13 @@ export default function PresidentNotes() {
                                     />
                                 </div>
 
-                                <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-4">
-                                    <div>
-                                        <p className="text-sm font-semibold text-slate-900">
-                                            Datos del centro vecinal en esta nota
-                                        </p>
-                                        <p className="mt-1 text-sm text-slate-500">
-                                            Elegí qué medios de contacto querés mostrar junto a la publicación.
-                                        </p>
-                                    </div>
-
-                                    <label className="flex items-start gap-3 rounded-xl bg-white px-4 py-3 ring-1 ring-slate-200">
-                                        <input
-                                            type="checkbox"
-                                            name="mostrarWhatsApp"
-                                            checked={noteForm.mostrarWhatsApp}
-                                            onChange={handleNoteChange}
-                                            className="mt-1 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
-                                        />
-                                        <span>
-                                            <span className="block text-sm font-medium text-slate-800">Mostrar WhatsApp vecinal</span>
-                                            <span className="block text-sm text-slate-500">
-                                                Ideal para redirigir a vecinos al grupo o canal de contacto.
-                                            </span>
-                                        </span>
-                                    </label>
-
-                                    <label className="flex items-start gap-3 rounded-xl bg-white px-4 py-3 ring-1 ring-slate-200">
-                                        <input
-                                            type="checkbox"
-                                            name="mostrarFacebook"
-                                            checked={noteForm.mostrarFacebook}
-                                            onChange={handleNoteChange}
-                                            className="mt-1 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
-                                        />
-                                        <span>
-                                            <span className="block text-sm font-medium text-slate-800">Mostrar Facebook</span>
-                                            <span className="block text-sm text-slate-500">
-                                                La nota incluirá el enlace público de Facebook si está cargado.
-                                            </span>
-                                        </span>
-                                    </label>
+                                <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-4">
+                                    <p className="text-sm font-semibold text-slate-900">
+                                        Difusión automática habilitada
+                                    </p>
+                                    <p className="mt-1 text-sm text-slate-500">
+                                        Esta nota incluirá siempre los accesos de WhatsApp y Facebook del centro vecinal para facilitar su difusión y apoyo.
+                                    </p>
                                 </div>
 
                                 <Button
@@ -894,10 +949,13 @@ export default function PresidentNotes() {
                                     loading={loadingNotes}
                                     emptyMessage="No se encontraron notas de tu barrio con ese criterio."
                                     onSupport={handleSupportNote}
+                                    onShareWhatsApp={handleShareNoteWhatsApp}
+                                    onShareFacebook={handleShareNoteFacebook}
                                     supportingNoteId={supportingNoteId}
                                     topSupport={topSupport}
                                     highlightedNoteId={highlightedNoteId}
                                     onPreview={handleOpenNotePreview}
+                                    canShareNote={canShareNote}
                                 />
                             </section>
                         ) : null}
@@ -913,10 +971,13 @@ export default function PresidentNotes() {
                                     loading={loadingNotes}
                                     emptyMessage="No se encontraron notas de otros barrios con ese criterio."
                                     onSupport={handleSupportNote}
+                                    onShareWhatsApp={handleShareNoteWhatsApp}
+                                    onShareFacebook={handleShareNoteFacebook}
                                     supportingNoteId={supportingNoteId}
                                     topSupport={topSupport}
                                     highlightedNoteId={highlightedNoteId}
                                     onPreview={handleOpenNotePreview}
+                                    canShareNote={canShareNote}
                                 />
                             </section>
                         ) : null}

@@ -79,8 +79,8 @@ public class NotaService {
         nota.setEstado(EstadoNota.ENTREGADO);
         nota.setMotivoEstado(null);
         nota.setMostrarUbicacion(dto.isMostrarUbicacion());
-        nota.setMostrarWhatsApp(dto.isMostrarWhatsApp());
-        nota.setMostrarFacebook(dto.isMostrarFacebook());
+        nota.setMostrarWhatsApp(true);
+        nota.setMostrarFacebook(true);
 
         Nota notaGuardada = notaRepository.save(nota);
         notificacionService.crearNotificacionesPorNuevaNota(notaGuardada);
@@ -172,6 +172,18 @@ public class NotaService {
         }
 
         return toDto(nota, ciudadanoId);
+    }
+
+    @Transactional(readOnly = true)
+    public NotaDTO obtenerNotaPublica(Long notaId) {
+        if (notaId == null) {
+            throw new RuntimeException("La nota es obligatoria.");
+        }
+
+        Nota nota = notaRepository.findById(notaId)
+                .orElseThrow(() -> new RuntimeException("La nota seleccionada no existe."));
+
+        return toDto(nota, null);
     }
 
     @Transactional

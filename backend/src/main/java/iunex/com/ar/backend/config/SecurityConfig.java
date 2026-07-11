@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/ciudadanos/registrar").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/barrios").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/notas/compartir/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         // Cualquier otra ruta del sistema requerirá autenticación
                         .anyRequest().authenticated()
