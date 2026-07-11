@@ -178,6 +178,30 @@ export async function generateNotePdfBlob(note) {
     const contentBlocks = extractTextBlocksFromHtml(note.contenido);
     currentY = renderWrappedText(pdf, contentBlocks.length > 0 ? contentBlocks : ["Sin contenido."], margin, currentY, contentWidth, 6);
 
+    const contactLines = [];
+
+    if (note.mostrarUbicacion && note.centroVecinalUbicacion) {
+        contactLines.push(`Ubicacion: ${note.centroVecinalUbicacion}`);
+    }
+
+    if (note.mostrarWhatsApp && note.centroVecinalWhatsApp) {
+        contactLines.push(`WhatsApp vecinal: ${note.centroVecinalWhatsApp}`);
+    }
+
+    if (note.mostrarFacebook && note.centroVecinalFacebook) {
+        contactLines.push(`Facebook: ${note.centroVecinalFacebook}`);
+    }
+
+    if (contactLines.length > 0) {
+        currentY += 8;
+        currentY = ensureVerticalSpace(pdf, currentY, 28);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("CONTACTO DEL CENTRO VECINAL", margin, currentY);
+        currentY += 8;
+        pdf.setFont("helvetica", "normal");
+        currentY = renderWrappedText(pdf, contactLines, margin, currentY, contentWidth, 6);
+    }
+
     if (note.motivoEstado) {
         currentY += 6;
         currentY = ensureVerticalSpace(pdf, currentY, 24);

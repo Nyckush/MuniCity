@@ -16,4 +16,6 @@ public interface CentroVecinalRepository extends JpaRepository<CentroVecinal, Lo
     boolean existsByPresidenteId(Long presidenteId);
 
     Optional<CentroVecinal> findByBarrioId(Long barrioId);
+
+    Optional<CentroVecinal> findByPresidenteId(Long presidenteId);
 }

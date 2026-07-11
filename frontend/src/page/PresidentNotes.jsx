@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Eye, FileText, HandHeart, Handshake, LoaderCircle, NotebookPen, X } from "lucide-react";
+import { Eye, FileText, Globe2, HandHeart, Handshake, LoaderCircle, MapPin, MessageCircle, NotebookPen, X } from "lucide-react";
 
 import api from "@/api/axios";
 import Navbar from "@/components/Navbar";
@@ -16,6 +16,9 @@ const initialNoteForm = {
     titulo: "",
     contenido: "",
     categoria: "COMUNICADO",
+    mostrarUbicacion: false,
+    mostrarWhatsApp: false,
+    mostrarFacebook: false,
 };
 
 const noteScopeOptions = [
@@ -104,6 +107,95 @@ function FormattedNoteContent({ content }) {
     );
 }
 
+function NoteContactBlock({ note }) {
+    const items = [];
+
+    if (note.mostrarUbicacion && note.centroVecinalUbicacion) {
+        items.push({
+            key: "ubicacion",
+            icon: MapPin,
+            label: "Ubicación",
+            value: note.centroVecinalUbicacion,
+            href: null,
+        });
+    }
+
+    if (note.mostrarWhatsApp && note.centroVecinalWhatsApp) {
+        items.push({
+            key: "whatsapp",
+            icon: MessageCircle,
+            label: "WhatsApp vecinal",
+            value: note.centroVecinalWhatsApp,
+            href: note.centroVecinalWhatsApp,
+        });
+    }
+
+    if (note.mostrarFacebook && note.centroVecinalFacebook) {
+        items.push({
+            key: "facebook",
+            icon: Globe2,
+            label: "Facebook",
+            value: note.centroVecinalFacebook,
+            href: note.centroVecinalFacebook,
+        });
+    }
+
+    if (items.length === 0) {
+        return null;
+    }
+
+    return (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50/85 px-4 py-4">
+            <div className="flex items-center gap-3">
+                {note.centroVecinalFotoPerfil ? (
+                    <img
+                        src={note.centroVecinalFotoPerfil}
+                        alt={note.centroVecinalNombre}
+                        className="h-12 w-12 rounded-2xl object-cover ring-1 ring-slate-200"
+                    />
+                ) : (
+                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400 ring-1 ring-slate-200">
+                        <NotebookPen size={18} />
+                    </div>
+                )}
+                <div className="min-w-0">
+                    <p className="text-sm font-semibold text-slate-900">{note.centroVecinalNombre}</p>
+                    <p className="text-xs uppercase tracking-[0.14em] text-slate-400">Contacto institucional</p>
+                </div>
+            </div>
+
+            <div className="mt-4 space-y-3">
+                {items.map((item) => {
+                    const Icon = item.icon;
+
+                    return (
+                        <div key={item.key} className="flex items-start gap-3 text-sm text-slate-600">
+                            <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-slate-500 ring-1 ring-slate-200">
+                                <Icon size={16} />
+                            </span>
+                            <div className="min-w-0">
+                                <p className="font-medium text-slate-800">{item.label}</p>
+                                {item.href ? (
+                                    <a
+                                        href={item.href}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="break-all text-sky-700 underline-offset-2 hover:underline"
+                                    >
+                                        {item.value}
+                                    </a>
+                                ) : (
+                                    <p>{item.value}</p>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
 function NoteList({
     notes,
     emptyMessage,
@@ -183,6 +275,7 @@ function NoteList({
                 <div className="mt-4">
                     <FormattedNoteContent content={note.contenido} />
                 </div>
+                <NoteContactBlock note={note} />
                 {note.motivoEstado ? (
                     <div className="mt-4 rounded-2xl border border-slate-200 bg-white px-4 py-3">
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
@@ -299,10 +392,10 @@ export default function PresidentNotes() {
     };
 
     const handleNoteChange = (event) => {
-        const { name, value } = event.target;
+        const { name, value, type, checked } = event.target;
         setNoteForm((current) => ({
             ...current,
-            [name]: value,
+            [name]: type === "checkbox" ? checked : value,
         }));
     };
 
@@ -683,6 +776,49 @@ export default function PresidentNotes() {
                                         }
                                         placeholder="Escribí la nota o propuesta que querés compartir..."
                                     />
+                                </div>
+
+                                <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-4">
+                                    <div>
+                                        <p className="text-sm font-semibold text-slate-900">
+                                            Datos del centro vecinal en esta nota
+                                        </p>
+                                        <p className="mt-1 text-sm text-slate-500">
+                                            Elegí qué medios de contacto querés mostrar junto a la publicación.
+                                        </p>
+                                    </div>
+
+                                    <label className="flex items-start gap-3 rounded-xl bg-white px-4 py-3 ring-1 ring-slate-200">
+                                        <input
+                                            type="checkbox"
+                                            name="mostrarWhatsApp"
+                                            checked={noteForm.mostrarWhatsApp}
+                                            onChange={handleNoteChange}
+                                            className="mt-1 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                                        />
+                                        <span>
+                                            <span className="block text-sm font-medium text-slate-800">Mostrar WhatsApp vecinal</span>
+                                            <span className="block text-sm text-slate-500">
+                                                Ideal para redirigir a vecinos al grupo o canal de contacto.
+                                            </span>
+                                        </span>
+                                    </label>
+
+                                    <label className="flex items-start gap-3 rounded-xl bg-white px-4 py-3 ring-1 ring-slate-200">
+                                        <input
+                                            type="checkbox"
+                                            name="mostrarFacebook"
+                                            checked={noteForm.mostrarFacebook}
+                                            onChange={handleNoteChange}
+                                            className="mt-1 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                                        />
+                                        <span>
+                                            <span className="block text-sm font-medium text-slate-800">Mostrar Facebook</span>
+                                            <span className="block text-sm text-slate-500">
+                                                La nota incluirá el enlace público de Facebook si está cargado.
+                                            </span>
+                                        </span>
+                                    </label>
                                 </div>
 
                                 <Button

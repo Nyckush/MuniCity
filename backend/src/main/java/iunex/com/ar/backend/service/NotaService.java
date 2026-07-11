@@ -78,6 +78,9 @@ public class NotaService {
         nota.setCategoria(dto.getCategoria());
         nota.setEstado(EstadoNota.ENTREGADO);
         nota.setMotivoEstado(null);
+        nota.setMostrarUbicacion(dto.isMostrarUbicacion());
+        nota.setMostrarWhatsApp(dto.isMostrarWhatsApp());
+        nota.setMostrarFacebook(dto.isMostrarFacebook());
 
         Nota notaGuardada = notaRepository.save(nota);
         notificacionService.crearNotificacionesPorNuevaNota(notaGuardada);
@@ -257,6 +260,13 @@ public class NotaService {
         dto.setCategoria(nota.getCategoria());
         dto.setEstado(nota.getEstado());
         dto.setMotivoEstado(nota.getMotivoEstado());
+        dto.setMostrarUbicacion(nota.isMostrarUbicacion());
+        dto.setMostrarWhatsApp(nota.isMostrarWhatsApp());
+        dto.setMostrarFacebook(nota.isMostrarFacebook());
+        dto.setCentroVecinalFotoPerfil(nota.getCentroVecinal().getFotoPerfil());
+        dto.setCentroVecinalUbicacion(nota.getCentroVecinal().getUbicacion());
+        dto.setCentroVecinalWhatsApp(nota.getCentroVecinal().getWhatsApp());
+        dto.setCentroVecinalFacebook(nota.getCentroVecinal().getFacebook());
         dto.setCantidadApoyos(apoyoNotaRepository.countByNotaId(nota.getId()));
         dto.setApoyadaPorMi(
                 ciudadanoId != null && apoyoNotaRepository.existsByCiudadanoIdAndNotaId(ciudadanoId, nota.getId())

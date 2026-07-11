@@ -19,6 +19,13 @@ public class NotaDTO {
     private CategoriaNota categoria;
     private EstadoNota estado;
     private String motivoEstado;
+    private boolean mostrarUbicacion;
+    private boolean mostrarWhatsApp;
+    private boolean mostrarFacebook;
+    private String centroVecinalFotoPerfil;
+    private String centroVecinalUbicacion;
+    private String centroVecinalWhatsApp;
+    private String centroVecinalFacebook;
     private Long cantidadApoyos;
     private boolean apoyadaPorMi;
     private LocalDateTime createdAt;
@@ -117,6 +124,62 @@ public class NotaDTO {
 
     public void setMotivoEstado(String motivoEstado) {
         this.motivoEstado = motivoEstado;
+    }
+
+    public boolean isMostrarUbicacion() {
+        return mostrarUbicacion;
+    }
+
+    public void setMostrarUbicacion(boolean mostrarUbicacion) {
+        this.mostrarUbicacion = mostrarUbicacion;
+    }
+
+    public boolean isMostrarWhatsApp() {
+        return mostrarWhatsApp;
+    }
+
+    public void setMostrarWhatsApp(boolean mostrarWhatsApp) {
+        this.mostrarWhatsApp = mostrarWhatsApp;
+    }
+
+    public boolean isMostrarFacebook() {
+        return mostrarFacebook;
+    }
+
+    public void setMostrarFacebook(boolean mostrarFacebook) {
+        this.mostrarFacebook = mostrarFacebook;
+    }
+
+    public String getCentroVecinalFotoPerfil() {
+        return centroVecinalFotoPerfil;
+    }
+
+    public void setCentroVecinalFotoPerfil(String centroVecinalFotoPerfil) {
+        this.centroVecinalFotoPerfil = centroVecinalFotoPerfil;
+    }
+
+    public String getCentroVecinalUbicacion() {
+        return centroVecinalUbicacion;
+    }
+
+    public void setCentroVecinalUbicacion(String centroVecinalUbicacion) {
+        this.centroVecinalUbicacion = centroVecinalUbicacion;
+    }
+
+    public String getCentroVecinalWhatsApp() {
+        return centroVecinalWhatsApp;
+    }
+
+    public void setCentroVecinalWhatsApp(String centroVecinalWhatsApp) {
+        this.centroVecinalWhatsApp = centroVecinalWhatsApp;
+    }
+
+    public String getCentroVecinalFacebook() {
+        return centroVecinalFacebook;
+    }
+
+    public void setCentroVecinalFacebook(String centroVecinalFacebook) {
+        this.centroVecinalFacebook = centroVecinalFacebook;
     }
 
     public Long getCantidadApoyos() {

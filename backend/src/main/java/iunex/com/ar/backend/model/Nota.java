@@ -41,6 +41,15 @@ public class Nota {
     @Column(name = "motivo_estado", columnDefinition = "TEXT")
     private String motivoEstado;
 
+    @Column(name = "mostrar_ubicacion", nullable = false)
+    private boolean mostrarUbicacion;
+
+    @Column(name = "mostrar_whats_app", nullable = false)
+    private boolean mostrarWhatsApp;
+
+    @Column(name = "mostrar_facebook", nullable = false)
+    private boolean mostrarFacebook;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -111,6 +120,30 @@ public class Nota {
 
     public void setMotivoEstado(String motivoEstado) {
         this.motivoEstado = motivoEstado;
+    }
+
+    public boolean isMostrarUbicacion() {
+        return mostrarUbicacion;
+    }
+
+    public void setMostrarUbicacion(boolean mostrarUbicacion) {
+        this.mostrarUbicacion = mostrarUbicacion;
+    }
+
+    public boolean isMostrarWhatsApp() {
+        return mostrarWhatsApp;
+    }
+
+    public void setMostrarWhatsApp(boolean mostrarWhatsApp) {
+        this.mostrarWhatsApp = mostrarWhatsApp;
+    }
+
+    public boolean isMostrarFacebook() {
+        return mostrarFacebook;
+    }
+
+    public void setMostrarFacebook(boolean mostrarFacebook) {
+        this.mostrarFacebook = mostrarFacebook;
     }
 
     public LocalDateTime getCreatedAt() {

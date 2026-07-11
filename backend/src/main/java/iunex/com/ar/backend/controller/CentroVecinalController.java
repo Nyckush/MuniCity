@@ -1,11 +1,13 @@
 package iunex.com.ar.backend.controller;
 
+import iunex.com.ar.backend.dto.ActualizarCentroVecinalDTO;
 import iunex.com.ar.backend.dto.CentroVecinalDTO;
 import iunex.com.ar.backend.model.CentroVecinal;
 import iunex.com.ar.backend.service.CentroVecinalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,5 +33,29 @@ public class CentroVecinalController {
     @GetMapping
     public ResponseEntity<List<CentroVecinal>> listarCentrosVecinales() {
         return new ResponseEntity<>(centroVecinalService.obtenerTodos(), HttpStatus.OK);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> obtenerMiCentroVecinal(Authentication authentication) {
+        try {
+            return new ResponseEntity<>(centroVecinalService.obtenerMiCentroVecinal(authentication), HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<?> actualizarMiCentroVecinal(
+            Authentication authentication,
+            @RequestBody ActualizarCentroVecinalDTO dto
+    ) {
+        try {
+            return new ResponseEntity<>(
+                    centroVecinalService.actualizarMiCentroVecinal(authentication, dto),
+                    HttpStatus.OK
+            );
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 }

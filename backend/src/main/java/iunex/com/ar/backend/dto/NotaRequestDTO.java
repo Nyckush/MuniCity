@@ -7,6 +7,9 @@ public class NotaRequestDTO {
     private String titulo;
     private String contenido;
     private CategoriaNota categoria;
+    private boolean mostrarUbicacion;
+    private boolean mostrarWhatsApp;
+    private boolean mostrarFacebook;
 
     public String getTitulo() {
         return titulo;
@@ -30,5 +33,29 @@ public class NotaRequestDTO {
 
     public void setCategoria(CategoriaNota categoria) {
         this.categoria = categoria;
+    }
+
+    public boolean isMostrarUbicacion() {
+        return mostrarUbicacion;
+    }
+
+    public void setMostrarUbicacion(boolean mostrarUbicacion) {
+        this.mostrarUbicacion = mostrarUbicacion;
+    }
+
+    public boolean isMostrarWhatsApp() {
+        return mostrarWhatsApp;
+    }
+
+    public void setMostrarWhatsApp(boolean mostrarWhatsApp) {
+        this.mostrarWhatsApp = mostrarWhatsApp;
+    }
+
+    public boolean isMostrarFacebook() {
+        return mostrarFacebook;
+    }
+
+    public void setMostrarFacebook(boolean mostrarFacebook) {
+        this.mostrarFacebook = mostrarFacebook;
     }
 }

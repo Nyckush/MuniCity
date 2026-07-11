@@ -24,6 +24,48 @@ public class SchemaMigrationConfig {
             } catch (Exception e) {
                 // Ignorado si ya existe
             }
+
+            try {
+                jdbcTemplate.execute("ALTER TABLE centros_vecinales ADD COLUMN foto_perfil VARCHAR(255) NULL");
+            } catch (Exception e) {
+                // Ignorado si ya existe
+            }
+
+            try {
+                jdbcTemplate.execute("ALTER TABLE centros_vecinales ADD COLUMN ubicacion VARCHAR(255) NULL");
+            } catch (Exception e) {
+                // Ignorado si ya existe
+            }
+
+            try {
+                jdbcTemplate.execute("ALTER TABLE centros_vecinales ADD COLUMN whats_app VARCHAR(255) NULL");
+            } catch (Exception e) {
+                // Ignorado si ya existe
+            }
+
+            try {
+                jdbcTemplate.execute("ALTER TABLE centros_vecinales ADD COLUMN facebook VARCHAR(255) NULL");
+            } catch (Exception e) {
+                // Ignorado si ya existe
+            }
+
+            try {
+                jdbcTemplate.execute("ALTER TABLE notas ADD COLUMN mostrar_ubicacion BIT NOT NULL DEFAULT b'0'");
+            } catch (Exception e) {
+                // Ignorado si ya existe
+            }
+
+            try {
+                jdbcTemplate.execute("ALTER TABLE notas ADD COLUMN mostrar_whats_app BIT NOT NULL DEFAULT b'0'");
+            } catch (Exception e) {
+                // Ignorado si ya existe
+            }
+
+            try {
+                jdbcTemplate.execute("ALTER TABLE notas ADD COLUMN mostrar_facebook BIT NOT NULL DEFAULT b'0'");
+            } catch (Exception e) {
+                // Ignorado si ya existe
+            }
         };
     }
 }
