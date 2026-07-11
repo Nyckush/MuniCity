@@ -53,7 +53,7 @@ export const toUploadUrl = (path) => {
         return path;
     }
 
-    return `http://localhost:8080${path}`;
+    return path;
 };
 
 export function ObservationCard({
