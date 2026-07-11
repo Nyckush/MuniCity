@@ -9,7 +9,13 @@ import {
 
 import { Button } from "@/components/ui/button";
 
-const uploadsBaseUrl = import.meta.env.VITE_UPLOADS_BASE_URL?.trim() || "";
+const runtimeConfig =
+    typeof window !== "undefined" && window.__APP_CONFIG__
+        ? window.__APP_CONFIG__
+        : {};
+
+const uploadsBaseUrl =
+    runtimeConfig.VITE_UPLOADS_BASE_URL?.trim() || import.meta.env.VITE_UPLOADS_BASE_URL?.trim() || "";
 
 export const initialObservationForm = {
     titulo: "",
