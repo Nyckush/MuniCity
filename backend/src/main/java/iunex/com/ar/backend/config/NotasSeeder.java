@@ -130,6 +130,7 @@ public class NotasSeeder implements CommandLineRunner {
 
             User user = userRepository.findByEmail(email).orElseGet(User::new);
             user.setEmail(email);
+            user.setUsername("vecino-" + barrioSlug + "-" + suffix);
             user.setPassword(passwordEncoder.encode("Vecino123"));
             user.setRole("ROLE_CIUDADANO");
             user = userRepository.save(user);

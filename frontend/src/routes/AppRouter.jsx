@@ -4,16 +4,39 @@ import Login from "@/page/Login";
 import Home from "@/page/Home";
 import Register from "@/page/Register";
 import Dashboard from "@/page/Dashboard";
+import PresidentDashboard from "@/page/PresidentDashboard";
 import CitizenElections from "@/page/CitizenElections";
+import CitizenObservations from "@/page/CitizenObservations";
 import PresidentNotes from "@/page/PresidentNotes";
-import Observations from "@/page/Observations";
+import PresidentObservations from "@/page/PresidentObservations";
+import Profile from "@/page/Profile";
+import Notifications from "@/page/Notifications";
 import MunicipioDashboard from "@/page/MunicipioDashboard";
 import MunicipioElections from "@/page/MunicipioElections";
 import MunicipioNotes from "@/page/MunicipioNotes";
+import NotePdfViewer from "@/page/NotePdfViewer";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { getValidStoredAuth } from "@/lib/auth";
 
+function DashboardEntry() {
+    const auth = getValidStoredAuth();
 
+    if (auth?.role === "ROLE_PRESIDENTE") {
+        return <PresidentDashboard />;
+    }
 
+    return <Dashboard />;
+}
+
+function ObservationsEntry() {
+    const auth = getValidStoredAuth();
+
+    if (auth?.role === "ROLE_PRESIDENTE") {
+        return <PresidentObservations />;
+    }
+
+    return <CitizenObservations />;
+}
 
 export default function AppRouter() {
     return (
@@ -25,7 +48,7 @@ export default function AppRouter() {
                 path="/dashboard"
                 element={
                     <ProtectedRoute allowedRoles={["ROLE_CIUDADANO", "ROLE_PRESIDENTE"]}>
-                        <Dashboard />
+                        <DashboardEntry />
                     </ProtectedRoute>
                 }
             />
@@ -46,10 +69,34 @@ export default function AppRouter() {
                 }
             />
             <Route
+                path="/notificaciones"
+                element={
+                    <ProtectedRoute allowedRoles={["ROLE_CIUDADANO", "ROLE_PRESIDENTE"]}>
+                        <Notifications />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/notas/:noteId/pdf"
+                element={
+                    <ProtectedRoute allowedRoles={["ROLE_CIUDADANO", "ROLE_PRESIDENTE", "ROLE_MUNICIPIO"]}>
+                        <NotePdfViewer />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
                 path="/observaciones"
                 element={
                     <ProtectedRoute allowedRoles={["ROLE_CIUDADANO", "ROLE_PRESIDENTE"]}>
-                        <Observations />
+                        <ObservationsEntry />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/perfil"
+                element={
+                    <ProtectedRoute allowedRoles={["ROLE_CIUDADANO", "ROLE_PRESIDENTE"]}>
+                        <Profile />
                     </ProtectedRoute>
                 }
             />

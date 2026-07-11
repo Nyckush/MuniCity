@@ -221,7 +221,7 @@ export default function MunicipioDashboard() {
                
 
                     <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                        <Card className="border-0 bg-white/92 py-0 shadow-[0_18px_50px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
+                        <Card className="border border-slate-200/80 bg-white/92 py-0 shadow-[0_18px_50px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
                             <CardContent className="px-6 py-6">
                                 <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 ring-1 ring-sky-100">
                                     <UsersRound size={22} />
@@ -230,7 +230,7 @@ export default function MunicipioDashboard() {
                                 <p className="mt-3 text-3xl font-semibold text-slate-900">{totalHabitants}</p>
                             </CardContent>
                         </Card>
-                        <Card className="border-0 bg-white/92 py-0 shadow-[0_18px_50px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
+                        <Card className="border border-slate-200/80 bg-white/92 py-0 shadow-[0_18px_50px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
                             <CardContent className="px-6 py-6">
                                 <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-700 ring-1 ring-cyan-100">
                                     <FileText size={22} />
@@ -239,7 +239,7 @@ export default function MunicipioDashboard() {
                                 <p className="mt-3 text-3xl font-semibold text-slate-900">{notes.length}</p>
                             </CardContent>
                         </Card>
-                        <Card className="border-0 bg-white/92 py-0 shadow-[0_18px_50px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
+                        <Card className="border border-slate-200/80 bg-white/92 py-0 shadow-[0_18px_50px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
                             <CardContent className="px-6 py-6">
                                 <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100">
                                     <Vote size={22} />
@@ -248,7 +248,7 @@ export default function MunicipioDashboard() {
                                 <p className="mt-3 text-3xl font-semibold text-slate-900">{electionStats.activas}</p>
                             </CardContent>
                         </Card>
-                        <Card className="border-0 bg-white/92 py-0 shadow-[0_18px_50px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
+                        <Card className="border border-slate-200/80 bg-white/92 py-0 shadow-[0_18px_50px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
                             <CardContent className="px-6 py-6">
                                 <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
                                     <Landmark size={22} />
@@ -260,7 +260,7 @@ export default function MunicipioDashboard() {
                     </div>
 
                     <section className="mt-6 grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-                        <Card className="border-0 bg-white/94 py-0 shadow-[0_24px_70px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
+                        <Card className="border border-slate-200/80 bg-white/94 py-0 shadow-[0_24px_70px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
                             <CardHeader className="px-8 pt-8">
                                 <div className="flex items-center gap-3">
                                     <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 ring-1 ring-sky-100">
@@ -307,7 +307,7 @@ export default function MunicipioDashboard() {
                             </CardContent>
                         </Card>
 
-                        <Card className="border-0 bg-white/94 py-0 shadow-[0_24px_70px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
+                        <Card className="border border-slate-200/80 bg-white/94 py-0 shadow-[0_24px_70px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
                             <CardHeader className="px-8 pt-8">
                                 <div className="flex items-center gap-3">
                                     <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-700 ring-1 ring-cyan-100">
@@ -354,7 +354,7 @@ export default function MunicipioDashboard() {
                     </section>
 
                     <section className="mt-6 grid gap-6 xl:grid-cols-[1fr_1fr]">
-                        <Card className="border-0 bg-white/94 py-0 shadow-[0_24px_70px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
+                        <Card className="border border-slate-200/80 bg-white/94 py-0 shadow-[0_24px_70px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
                             <CardHeader className="px-8 pt-8">
                                 <CardTitle className="text-2xl font-semibold text-slate-900">
                                     Cantidad de notas por barrio

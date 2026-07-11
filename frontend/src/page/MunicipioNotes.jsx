@@ -75,6 +75,15 @@ const initialReviewForm = {
     motivo: "",
 };
 
+function FormattedNoteContent({ content }) {
+    return (
+        <div
+            className="text-sm leading-7 text-slate-600 [&_blockquote]:border-l-4 [&_blockquote]:border-sky-200 [&_blockquote]:bg-sky-50/70 [&_blockquote]:px-4 [&_blockquote]:py-3 [&_blockquote]:italic [&_h1]:text-2xl [&_h1]:font-semibold [&_h1]:text-slate-900 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-slate-900 [&_li]:ml-4 [&_ol]:list-decimal [&_p]:whitespace-pre-wrap [&_ul]:list-disc"
+            dangerouslySetInnerHTML={{ __html: content || "<p></p>" }}
+        />
+    );
+}
+
 export default function MunicipioNotes() {
     const navigate = useNavigate();
     const [auth, setAuth] = useState(null);
@@ -181,6 +190,10 @@ export default function MunicipioNotes() {
         }));
     };
 
+    const handleOpenPdf = (noteId) => {
+        window.open(`/notas/${noteId}/pdf`, "_blank", "noopener,noreferrer");
+    };
+
     const handleSubmitState = async (event) => {
         event.preventDefault();
 
@@ -245,7 +258,7 @@ export default function MunicipioNotes() {
     }
 
     return (
-        <main className="min-h-screen overflow-x-hidden bg-[linear-gradient(180deg,#edf6ff_0%,#f5fbff_38%,#fbfdff_100%)] pt-[73px]">
+        <main className="min-h-screen overflow-x-hidden bg-[#f4f6f8] pt-[73px]">
             <Navbar
                 homeHref="/municipio/dashboard"
                 userLabel={auth.municipioNombre || auth.email}
@@ -314,7 +327,7 @@ export default function MunicipioNotes() {
                     </div>
 
                     <section className="mt-6 grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-                        <Card className="border-0 bg-white/94 py-0 shadow-[0_24px_70px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
+                        <Card className="border-0 bg-transparent py-0 shadow-none ring-0">
                             <CardHeader className="px-8 pt-8">
                                 <CardTitle className="text-2xl font-semibold text-slate-900">
                                     Listado de notas de todos los barrios
@@ -332,7 +345,7 @@ export default function MunicipioNotes() {
                                         return (
                                             <article
                                                 key={note.id}
-                                                className="rounded-3xl border border-slate-200 bg-slate-50/80 p-5"
+                                                className="rounded-3xl border border-slate-200 bg-[#ffffff] p-5 shadow-[0_14px_32px_rgba(15,23,42,0.08)]"
                                             >
                                                 <div className="flex flex-wrap items-start justify-between gap-3">
                                                     <div>
@@ -368,9 +381,9 @@ export default function MunicipioNotes() {
                                                     </div>
                                                 </div>
 
-                                                <p className="mt-4 line-clamp-4 whitespace-pre-wrap text-sm leading-7 text-slate-600">
-                                                    {note.contenido}
-                                                </p>
+                                                <div className="mt-4 line-clamp-4 overflow-hidden">
+                                                    <FormattedNoteContent content={note.contenido} />
+                                                </div>
 
                                                 {note.motivoEstado ? (
                                                     <div className="mt-4 rounded-2xl border border-slate-200 bg-white px-4 py-3">
@@ -389,21 +402,32 @@ export default function MunicipioNotes() {
                                                         {note.cantidadApoyos ?? 0} {(note.cantidadApoyos ?? 0) === 1 ? "apoyo" : "apoyos"}
                                                     </div>
 
-                                                    <Button
-                                                        type="button"
-                                                        onClick={() => handleOpenNote(note.id)}
-                                                        disabled={loadingNoteId === note.id}
-                                                        className="rounded-full bg-[linear-gradient(135deg,#2177d5,#2db6d5)] text-white hover:opacity-95"
-                                                    >
-                                                        {loadingNoteId === note.id ? (
-                                                            <>
-                                                                <LoaderCircle className="animate-spin" size={16} />
-                                                                Abriendo...
-                                                            </>
-                                                        ) : (
-                                                            "Revisar nota"
-                                                        )}
-                                                    </Button>
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            onClick={() => handleOpenPdf(note.id)}
+                                                            className="rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                                                        >
+                                                            Ver nota
+                                                        </Button>
+
+                                                        <Button
+                                                            type="button"
+                                                            onClick={() => handleOpenNote(note.id)}
+                                                            disabled={loadingNoteId === note.id}
+                                                            className="rounded-full bg-[linear-gradient(135deg,#2177d5,#2db6d5)] text-white hover:opacity-95"
+                                                        >
+                                                            {loadingNoteId === note.id ? (
+                                                                <>
+                                                                    <LoaderCircle className="animate-spin" size={16} />
+                                                                    Abriendo...
+                                                                </>
+                                                            ) : (
+                                                                "Revisar nota"
+                                                            )}
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             </article>
                                         );
@@ -456,13 +480,22 @@ export default function MunicipioNotes() {
                                                 </p>
                                             </div>
 
-                                            <p className="whitespace-pre-wrap text-sm leading-7 text-slate-600">
-                                                {selectedNote.contenido}
-                                            </p>
+                                            <FormattedNoteContent content={selectedNote.contenido} />
 
-                                            <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-700 ring-1 ring-slate-200">
-                                                <HandHeart size={18} className="text-rose-500" />
-                                                {selectedNote.cantidadApoyos ?? 0} {(selectedNote.cantidadApoyos ?? 0) === 1 ? "apoyo" : "apoyos"}
+                                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                                <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-700 ring-1 ring-slate-200">
+                                                    <HandHeart size={18} className="text-rose-500" />
+                                                    {selectedNote.cantidadApoyos ?? 0} {(selectedNote.cantidadApoyos ?? 0) === 1 ? "apoyo" : "apoyos"}
+                                                </div>
+
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() => handleOpenPdf(selectedNote.id)}
+                                                    className="rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                                                >
+                                                    Ver nota en PDF
+                                                </Button>
                                             </div>
                                         </div>
 

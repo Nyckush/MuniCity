@@ -14,8 +14,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class MunicipioSeeder {
 
     private static final String MUNICIPIO_EMAIL = "municipio@municity.com";
+    private static final String MUNICIPIO_USERNAME = "muni";
     private static final String MUNICIPIO_PASSWORD = "asdasdasd";
-    private static final String MUNICIPIO_NOMBRE = "Municipio de Municity";
+    private static final String MUNICIPIO_NOMBRE = "Municipalidad de San Salvador de Jujuy";
 
     @Order(3)
     @Bean
@@ -29,6 +30,7 @@ public class MunicipioSeeder {
                     .orElseGet(User::new);
 
             user.setEmail(MUNICIPIO_EMAIL);
+            user.setUsername(MUNICIPIO_USERNAME);
             user.setPassword(passwordEncoder.encode(MUNICIPIO_PASSWORD));
             user.setRole("ROLE_MUNICIPIO");
 

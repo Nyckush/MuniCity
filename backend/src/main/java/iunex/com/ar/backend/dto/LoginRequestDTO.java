@@ -3,6 +3,7 @@ package iunex.com.ar.backend.dto;
 public class LoginRequestDTO {
 
     private String email;
+    private String identifier;
     private String password;
 
     public String getEmail() {
@@ -11,6 +12,14 @@ public class LoginRequestDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
     }
 
     public String getPassword() {

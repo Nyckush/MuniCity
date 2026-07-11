@@ -1,14 +1,20 @@
 package iunex.com.ar.backend.dto;
 
+import java.time.LocalDate;
+
 public class AuthResponseDTO {
 
     private Long userId;
     private String email;
+    private String username;
     private String role;
+    private String fotoPerfil;
     private Long ciudadanoId;
     private Long municipioId;
     private String nombreCompleto;
     private String apellido;
+    private String dni;
+    private LocalDate fechaNacimiento;
     private String municipioNombre;
     private Long barrioId;
     private String barrioNombre;
@@ -32,12 +38,28 @@ public class AuthResponseDTO {
         this.email = email;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public String getRole() {
         return role;
     }
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getFotoPerfil() {
+        return fotoPerfil;
+    }
+
+    public void setFotoPerfil(String fotoPerfil) {
+        this.fotoPerfil = fotoPerfil;
     }
 
     public Long getCiudadanoId() {
@@ -70,6 +92,22 @@ public class AuthResponseDTO {
 
     public void setApellido(String apellido) {
         this.apellido = apellido;
+    }
+
+    public String getDni() {
+        return dni;
+    }
+
+    public void setDni(String dni) {
+        this.dni = dni;
+    }
+
+    public LocalDate getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
+    public void setFechaNacimiento(LocalDate fechaNacimiento) {
+        this.fechaNacimiento = fechaNacimiento;
     }
 
     public String getMunicipioNombre() {

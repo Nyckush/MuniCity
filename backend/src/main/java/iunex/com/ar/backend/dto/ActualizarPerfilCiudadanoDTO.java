@@ -2,55 +2,14 @@ package iunex.com.ar.backend.dto;
 
 import java.time.LocalDate;
 
-public class RegistroCiudadanoDTO {
+public class ActualizarPerfilCiudadanoDTO {
 
-    // Datos de la Cuenta (User)
-    private String email;
-    private String username;
-    private String password;
-    private String fotoPerfil;
-
-    // Datos del Perfil (Ciudadano)
     private String nombreCompleto;
     private String apellido;
     private String dni;
     private LocalDate fechaNacimiento;
-
-    // El ID del barrio seleccionado en el select del frontend
     private Long barrioId;
-
-    // Getters y Setters
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getFotoPerfil() {
-        return fotoPerfil;
-    }
-
-    public void setFotoPerfil(String fotoPerfil) {
-        this.fotoPerfil = fotoPerfil;
-    }
+    private String fotoPerfil;
 
     public String getNombreCompleto() {
         return nombreCompleto;
@@ -90,5 +49,13 @@ public class RegistroCiudadanoDTO {
 
     public void setBarrioId(Long barrioId) {
         this.barrioId = barrioId;
+    }
+
+    public String getFotoPerfil() {
+        return fotoPerfil;
+    }
+
+    public void setFotoPerfil(String fotoPerfil) {
+        this.fotoPerfil = fotoPerfil;
     }
 }

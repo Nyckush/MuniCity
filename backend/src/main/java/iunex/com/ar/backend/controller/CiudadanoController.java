@@ -1,10 +1,12 @@
 package iunex.com.ar.backend.controller;
 
+import iunex.com.ar.backend.dto.ActualizarPerfilCiudadanoDTO;
 import iunex.com.ar.backend.dto.RegistroCiudadanoDTO;
 import iunex.com.ar.backend.service.CiudadanoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,6 +30,16 @@ public class CiudadanoController {
         } catch (RuntimeException e) {
             // Si el servicio lanzó una excepción (DNI repetido, Correo repetido, etc.)
             // capturamos el mensaje y devolvemos un estado 400 (Bad Request)
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/perfil")
+    public ResponseEntity<String> actualizarPerfil(@RequestBody ActualizarPerfilCiudadanoDTO dto, Authentication authentication) {
+        try {
+            ciudadanoService.actualizarPerfil(authentication, dto);
+            return new ResponseEntity<>("Perfil actualizado con éxito.", HttpStatus.OK);
+        } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, LoaderCircle, Mail } from "lucide-react";
+import { AtSign, ChevronLeft, LoaderCircle } from "lucide-react";
 
 import api from "@/api/axios";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { getDashboardRouteByRole, saveStoredAuth } from "@/lib/auth";
 
 const initialForm = {
-    email: "",
+    identifier: "",
     password: "",
 };
 
@@ -37,7 +37,7 @@ export default function Login() {
 
         try {
             const response = await api.post("/auth/login", {
-                email: form.email.trim(),
+                identifier: form.identifier.trim(),
                 password: form.password,
             });
 
@@ -88,16 +88,16 @@ export default function Login() {
                             <form className="space-y-6" onSubmit={handleSubmit}>
                                 <div className="grid gap-5">
                                     <div className="space-y-2">
-                                        <Label htmlFor="email">Correo electrónico</Label>
+                                        <Label htmlFor="identifier">Correo electrónico o username</Label>
                                         <div className="relative">
-                                            <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                            <AtSign className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                                             <Input
-                                                id="email"
-                                                name="email"
-                                                type="email"
-                                                value={form.email}
+                                                id="identifier"
+                                                name="identifier"
+                                                type="text"
+                                                value={form.identifier}
                                                 onChange={handleChange}
-                                                placeholder="nombre@correo.com"
+                                                placeholder="Ej. presidente o nombre@correo.com"
                                                 required
                                                 className="h-11 rounded-xl border-slate-200 bg-white pl-10"
                                             />

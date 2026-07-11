@@ -46,6 +46,9 @@ public class ObservacionService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private NotificacionService notificacionService;
+
     @Transactional
     public ObservacionDTO guardarObservacion(ObservacionRequestDTO dto, Authentication authentication) {
         if (dto == null) {
@@ -82,7 +85,10 @@ public class ObservacionService {
             observacion.addImagen(observacionImagen);
         }
 
-        return toDto(observacionRepository.save(observacion));
+        Observacion observacionGuardada = observacionRepository.save(observacion);
+        notificacionService.crearNotificacionPorNuevaObservacion(observacionGuardada);
+
+        return toDto(observacionGuardada);
     }
 
     @Transactional(readOnly = true)

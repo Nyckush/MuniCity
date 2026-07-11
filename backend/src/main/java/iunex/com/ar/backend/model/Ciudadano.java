@@ -53,6 +53,10 @@ public class Ciudadano {
     @JsonIgnore
     private List<Observacion> observaciones = new ArrayList<>();
 
+    @OneToMany(mappedBy = "ciudadano", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Notificacion> notificaciones = new ArrayList<>();
+
     // Getters y Setters
     public Long getId() {
         return id;
@@ -140,5 +144,13 @@ public class Ciudadano {
 
     public void setObservaciones(List<Observacion> observaciones) {
         this.observaciones = observaciones;
+    }
+
+    public List<Notificacion> getNotificaciones() {
+        return notificaciones;
+    }
+
+    public void setNotificaciones(List<Notificacion> notificaciones) {
+        this.notificaciones = notificaciones;
     }
 }

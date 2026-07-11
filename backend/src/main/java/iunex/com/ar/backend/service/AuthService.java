@@ -40,17 +40,17 @@ public class AuthService {
 
     @Transactional
     public AuthResponseDTO login(LoginRequestDTO dto) {
-        if (dto == null || dto.getEmail() == null || dto.getEmail().isBlank()) {
-            throw new RuntimeException("El correo electrónico es obligatorio.");
+        String rawIdentifier = resolveLoginIdentifier(dto);
+
+        if (rawIdentifier == null || rawIdentifier.isBlank()) {
+            throw new RuntimeException("El correo electrónico o username es obligatorio.");
         }
 
         if (dto.getPassword() == null || dto.getPassword().isBlank()) {
             throw new RuntimeException("La contraseña es obligatoria.");
         }
 
-        String emailNormalizado = dto.getEmail().trim().toLowerCase();
-
-        User user = userRepository.findByEmail(emailNormalizado)
+        User user = findUserByIdentifier(rawIdentifier)
                 .orElseThrow(() -> new RuntimeException("Correo o contraseña incorrectos."));
 
         if (!passwordMatches(dto.getPassword(), user.getPassword())) {
@@ -68,6 +68,33 @@ public class AuthService {
         response.setMessage("Inicio de sesión exitoso.");
 
         return response;
+    }
+
+    private String resolveLoginIdentifier(LoginRequestDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        if (dto.getIdentifier() != null && !dto.getIdentifier().isBlank()) {
+            return dto.getIdentifier().trim();
+        }
+
+        if (dto.getEmail() != null && !dto.getEmail().isBlank()) {
+            return dto.getEmail().trim();
+        }
+
+        return null;
+    }
+
+    private java.util.Optional<User> findUserByIdentifier(String identifier) {
+        String normalizedIdentifier = identifier.trim();
+
+        if (normalizedIdentifier.contains("@")) {
+            return userRepository.findByEmailIgnoreCase(normalizedIdentifier.toLowerCase());
+        }
+
+        return userRepository.findByUsernameIgnoreCase(normalizedIdentifier)
+                .or(() -> userRepository.findByEmailIgnoreCase(normalizedIdentifier.toLowerCase()));
     }
 
     @Transactional(readOnly = true)
@@ -111,7 +138,9 @@ public class AuthService {
         AuthResponseDTO response = new AuthResponseDTO();
         response.setUserId(user.getId());
         response.setEmail(user.getEmail());
+        response.setUsername(user.getUsername());
         response.setRole(user.getRole());
+        response.setFotoPerfil(user.getFotoPerfil());
 
         if (isCitizenRole(user.getRole())) {
             Ciudadano ciudadano = ciudadanoRepository.findByUserId(user.getId())
@@ -120,6 +149,8 @@ public class AuthService {
             response.setCiudadanoId(ciudadano.getId());
             response.setNombreCompleto(ciudadano.getNombreCompleto());
             response.setApellido(ciudadano.getApellido());
+            response.setDni(ciudadano.getDni());
+            response.setFechaNacimiento(ciudadano.getFechaNacimiento());
             response.setBarrioId(ciudadano.getBarrio().getId());
             response.setBarrioNombre(ciudadano.getBarrio().getNombre());
             return response;

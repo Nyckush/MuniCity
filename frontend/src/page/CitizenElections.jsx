@@ -185,12 +185,15 @@ export default function CitizenElections() {
     }
 
     return (
-        <main className="min-h-screen bg-[linear-gradient(180deg,#eef8ff_0%,#f9fbff_60%,#ffffff_100%)]">
+        <main className="min-h-screen bg-[#E6E9F3]">
             <Navbar
                 homeHref="/dashboard"
                 userLabel={auth.nombreCompleto || auth.email}
+                profileImageUrl={auth.fotoPerfil || ""}
                 onLogout={handleLogout}
                 navItems={citizenNavigationItems}
+                notificationsEnabled
+                profileEnabled
             />
 
             <div className="flex w-full flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">

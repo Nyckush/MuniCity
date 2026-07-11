@@ -13,6 +13,7 @@ import { getDashboardRouteByRole, saveStoredAuth } from "@/lib/auth";
 
 const initialForm = {
     email: "",
+    username: "",
     password: "",
     confirmPassword: "",
     nombreCompleto: "",
@@ -110,12 +111,14 @@ export default function Register() {
 
         try {
             const trimmedEmail = form.email.trim();
+            const trimmedUsername = form.username.trim();
             const trimmedNombreCompleto = form.nombreCompleto.trim();
             const trimmedApellido = form.apellido.trim();
             const trimmedDni = form.dni.trim();
 
             await api.post("/ciudadanos/registrar", {
                 email: trimmedEmail,
+                username: trimmedUsername,
                 password: form.password,
                 nombreCompleto: trimmedNombreCompleto,
                 apellido: trimmedApellido,
@@ -286,6 +289,19 @@ export default function Register() {
                                             name="barrioId"
                                             value={form.barrioId}
                                             readOnly
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2 md:col-span-2">
+                                        <Label htmlFor="username">Username</Label>
+                                        <Input
+                                            id="username"
+                                            name="username"
+                                            value={form.username}
+                                            onChange={handleChange}
+                                            placeholder="Ej. juanperez"
+                                            required
+                                            className="h-11 rounded-xl border-slate-200 bg-white"
                                         />
                                     </div>
 

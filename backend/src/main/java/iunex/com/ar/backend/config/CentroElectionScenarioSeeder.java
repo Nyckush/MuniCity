@@ -89,6 +89,7 @@ public class CentroElectionScenarioSeeder implements CommandLineRunner {
 
             User user = userRepository.findByEmail(email).orElseGet(User::new);
             user.setEmail(email);
+            user.setUsername("centro-vecino-" + numero);
             user.setPassword(passwordEncoder.encode("Vecino123"));
             user.setRole("ROLE_CIUDADANO");
             user = userRepository.save(user);

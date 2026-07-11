@@ -16,6 +16,8 @@ public interface CiudadanoRepository extends JpaRepository<Ciudadano, Long> {
 
     List<Ciudadano> findAllByBarrioIdOrderByIdAsc(Long barrioId);
 
+    List<Ciudadano> findAllByBarrioIdAndIdNotOrderByIdAsc(Long barrioId, Long ciudadanoId);
+
     // Para verificar rápidamente si el DNI ya está en uso
     boolean existsByDni(String dni);
 }

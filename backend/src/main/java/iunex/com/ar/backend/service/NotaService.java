@@ -42,6 +42,9 @@ public class NotaService {
     @Autowired
     private ApoyoNotaRepository apoyoNotaRepository;
 
+    @Autowired
+    private NotificacionService notificacionService;
+
     @Transactional
     public NotaDTO crearNota(NotaRequestDTO dto, Authentication authentication) {
         if (dto == null) {
@@ -76,7 +79,10 @@ public class NotaService {
         nota.setEstado(EstadoNota.ENTREGADO);
         nota.setMotivoEstado(null);
 
-        return toDto(notaRepository.save(nota), presidente.getId());
+        Nota notaGuardada = notaRepository.save(nota);
+        notificacionService.crearNotificacionesPorNuevaNota(notaGuardada);
+
+        return toDto(notaGuardada, presidente.getId());
     }
 
     @Transactional(readOnly = true)
@@ -188,10 +194,14 @@ public class NotaService {
         Nota nota = notaRepository.findById(notaId)
                 .orElseThrow(() -> new RuntimeException("La nota seleccionada no existe."));
 
+        EstadoNota estadoAnterior = nota.getEstado();
         nota.setEstado(dto.getEstado());
         nota.setMotivoEstado(normalizarTexto(dto.getMotivo()));
 
-        return toDto(notaRepository.save(nota), null);
+        Nota notaActualizada = notaRepository.save(nota);
+        notificacionService.crearNotificacionesPorEstadoFinalDeNota(notaActualizada, estadoAnterior);
+
+        return toDto(notaActualizada, null);
     }
 
     private Ciudadano getPresidenteAutenticado(Authentication authentication) {

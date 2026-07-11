@@ -45,7 +45,9 @@ public class CentroVecinalSeeder implements CommandLineRunner {
             String barrioNombre,
             String centroVecinalNombre,
             String email,
+            String username,
             String password,
+            String role,
             String nombreCompleto,
             String apellido,
             String dni,
@@ -56,10 +58,10 @@ public class CentroVecinalSeeder implements CommandLineRunner {
     @Transactional
     public void run(String... args) {
         List<SeedData> seedData = List.of(
-                new SeedData("Centro", "Centro Vecinal Centro", "presidente.centro@municity.com", "Vecino123", "Lucia Fernandez", "Fernandez", "30111222", LocalDate.of(1988, 4, 12)),
-                new SeedData("San Pedrito", "Centro Vecinal San Pedrito", "presidente.sanpedrito@municity.com", "Vecino123", "Marcos Ruiz", "Ruiz", "28999111", LocalDate.of(1985, 9, 3)),
-                new SeedData("Ciudad de Nieva", "Centro Vecinal Ciudad de Nieva", "presidente.nieva@municity.com", "Vecino123", "Daniela Lopez", "Lopez", "31222333", LocalDate.of(1990, 1, 21)),
-                new SeedData("Alto Comedero", "Centro Vecinal Alto Comedero", "presidente.altocomedero@municity.com", "Vecino123", "Sergio Mamani", "Mamani", "27666777", LocalDate.of(1983, 6, 17))
+                new SeedData("Centro", "Centro Vecinal Centro", "bruno.vilca@municity.com", "presidente", "asdasdasd", "ROLE_PRESIDENTE", "Bruno Ariel", "Vilca", "30111222", LocalDate.of(1988, 4, 12)),
+                new SeedData("San Pedrito", "Centro Vecinal San Pedrito", "milagro.mamani@municity.com", "vecino", "asdasdasd", "ROLE_CIUDADANO", "Milagro Belen", "Mamani", "28999111", LocalDate.of(1992, 9, 3)),
+                new SeedData("Ciudad de Nieva", "Centro Vecinal Ciudad de Nieva", "carolina.quispe@municity.com", "carolina.quispe", "Vecino123", "ROLE_CIUDADANO", "Carolina Soledad", "Quispe", "31222333", LocalDate.of(1990, 1, 21)),
+                new SeedData("Alto Comedero", "Centro Vecinal Alto Comedero", "sergio.condori@municity.com", "sergio.condori", "Vecino123", "ROLE_CIUDADANO", "Sergio Daniel", "Condori", "27666777", LocalDate.of(1983, 6, 17))
         );
 
         for (SeedData data : seedData) {
@@ -71,8 +73,9 @@ public class CentroVecinalSeeder implements CommandLineRunner {
 
             User user = userRepository.findByEmail(data.email()).orElseGet(User::new);
             user.setEmail(data.email());
+            user.setUsername(data.username());
             user.setPassword(passwordEncoder.encode(data.password()));
-            user.setRole("Centro".equalsIgnoreCase(data.barrioNombre()) ? "ROLE_PRESIDENTE" : "ROLE_CIUDADANO");
+            user.setRole(data.role());
             user = userRepository.save(user);
 
             Ciudadano ciudadano = ciudadanoRepository.findByDni(data.dni()).orElseGet(Ciudadano::new);
