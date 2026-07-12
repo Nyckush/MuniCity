@@ -59,7 +59,7 @@ public class CentroVecinalSeeder implements CommandLineRunner {
     public void run(String... args) {
         List<SeedData> seedData = List.of(
                 new SeedData("Centro", "Centro Vecinal Centro", "bruno.vilca@municity.com", "presidente", "asdasdasd", "ROLE_PRESIDENTE", "Bruno Ariel", "Vilca", "30111222", LocalDate.of(1988, 4, 12)),
-                new SeedData("San Pedrito", "Centro Vecinal San Pedrito", "milagro.mamani@municity.com", "vecino", "asdasdasd", "ROLE_CIUDADANO", "Milagro Belen", "Mamani", "28999111", LocalDate.of(1992, 9, 3)),
+                new SeedData("Centro", "Centro Vecinal Centro", "milagro.mamani@municity.com", "vecino", "asdasdasd", "ROLE_CIUDADANO", "Milagro Belen", "Mamani", "28999111", LocalDate.of(1992, 9, 3)),
                 new SeedData("Ciudad de Nieva", "Centro Vecinal Ciudad de Nieva", "carolina.quispe@municity.com", "carolina.quispe", "Vecino123", "ROLE_CIUDADANO", "Carolina Soledad", "Quispe", "31222333", LocalDate.of(1990, 1, 21)),
                 new SeedData("Alto Comedero", "Centro Vecinal Alto Comedero", "sergio.condori@municity.com", "sergio.condori", "Vecino123", "ROLE_CIUDADANO", "Sergio Daniel", "Condori", "27666777", LocalDate.of(1983, 6, 17))
         );

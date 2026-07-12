@@ -31,6 +31,10 @@ import java.util.List;
 @Order(4)
 public class CentroElectionScenarioSeeder implements CommandLineRunner {
 
+    private static final String FOTO_POSTULANTE_HOMBRE_1 = "https://i.pinimg.com/1200x/09/69/45/096945a99a78eddc7b98ec8ed31cc40b.jpg";
+    private static final String FOTO_POSTULANTE_HOMBRE_2 = "https://i.pinimg.com/736x/3c/2b/ad/3c2badd0b9688bcb810ef699afc3f7c1.jpg";
+    private static final String FOTO_POSTULANTE_MUJER_1 = "https://i.pinimg.com/736x/ba/cc/8f/bacc8f09729968960f045e9ef5c3bcf8.jpg";
+
     private final BarrioRepository barrioRepository;
     private final CentroVecinalRepository centroVecinalRepository;
     private final CiudadanoRepository ciudadanoRepository;
@@ -92,11 +96,11 @@ public class CentroElectionScenarioSeeder implements CommandLineRunner {
             user.setUsername("centro-vecino-" + numero);
             user.setPassword(passwordEncoder.encode("Vecino123"));
             user.setRole("ROLE_CIUDADANO");
+            applyCentroCandidateProfile(user, index);
             user = userRepository.save(user);
 
             Ciudadano ciudadano = ciudadanoRepository.findByDni(dni).orElseGet(Ciudadano::new);
-            ciudadano.setNombreCompleto("Vecino Centro " + numero);
-            ciudadano.setApellido("Centro" + numero);
+            applyCentroCitizenProfile(ciudadano, index, numero);
             ciudadano.setDni(dni);
             ciudadano.setFechaNacimiento(LocalDate.of(1985, 1, 1).plusDays(index * 37L));
             ciudadano.setBarrio(barrioCentro);
@@ -154,5 +158,44 @@ public class CentroElectionScenarioSeeder implements CommandLineRunner {
         }
 
         System.out.println("🌱 Escenario electoral cargado: 40 ciudadanos en Centro, 3 postulantes y votos repartidos.");
+    }
+
+    private void applyCentroCandidateProfile(User user, int index) {
+        if (index == 1) {
+            user.setFotoPerfil(FOTO_POSTULANTE_HOMBRE_1);
+            return;
+        }
+
+        if (index == 2) {
+            user.setFotoPerfil(FOTO_POSTULANTE_MUJER_1);
+            return;
+        }
+
+        if (index == 3) {
+            user.setFotoPerfil(FOTO_POSTULANTE_HOMBRE_2);
+        }
+    }
+
+    private void applyCentroCitizenProfile(Ciudadano ciudadano, int index, String numero) {
+        if (index == 1) {
+            ciudadano.setNombreCompleto("Matias Rodrigo");
+            ciudadano.setApellido("Mamani");
+            return;
+        }
+
+        if (index == 2) {
+            ciudadano.setNombreCompleto("Camila Belen");
+            ciudadano.setApellido("Quispe");
+            return;
+        }
+
+        if (index == 3) {
+            ciudadano.setNombreCompleto("Lucas Ezequiel");
+            ciudadano.setApellido("Choque");
+            return;
+        }
+
+        ciudadano.setNombreCompleto("Vecino Centro " + numero);
+        ciudadano.setApellido("Centro" + numero);
     }
 }

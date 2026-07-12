@@ -34,6 +34,15 @@ public class CandidaturaController {
         }
     }
 
+    @GetMapping("/postulantes-registrados")
+    public ResponseEntity<?> listarPostulantesRegistrados(Authentication authentication) {
+        try {
+            return new ResponseEntity<>(candidaturaService.listarPostulantesRegistrados(authentication), HttpStatus.OK);
+        } catch (RuntimeException exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @PostMapping
     public ResponseEntity<?> postularme(@RequestBody PostulacionRequestDTO dto, Authentication authentication) {
         try {

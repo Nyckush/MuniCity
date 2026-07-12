@@ -8,8 +8,10 @@ public class NotificacionDTO {
 
     private Long id;
     private Long ciudadanoId;
+    private Long municipioId;
     private Long notaId;
     private Long observacionId;
+    private Long comunicadoMunicipalId;
     private TipoNotificacion tipo;
     private String titulo;
     private String mensaje;
@@ -32,6 +34,14 @@ public class NotificacionDTO {
         this.ciudadanoId = ciudadanoId;
     }
 
+    public Long getMunicipioId() {
+        return municipioId;
+    }
+
+    public void setMunicipioId(Long municipioId) {
+        this.municipioId = municipioId;
+    }
+
     public Long getNotaId() {
         return notaId;
     }
@@ -46,6 +56,14 @@ public class NotificacionDTO {
 
     public void setObservacionId(Long observacionId) {
         this.observacionId = observacionId;
+    }
+
+    public Long getComunicadoMunicipalId() {
+        return comunicadoMunicipalId;
+    }
+
+    public void setComunicadoMunicipalId(Long comunicadoMunicipalId) {
+        this.comunicadoMunicipalId = comunicadoMunicipalId;
     }
 
     public TipoNotificacion getTipo() {

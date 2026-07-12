@@ -264,28 +264,14 @@ export default function MunicipioNotes() {
                 userLabel={auth.municipioNombre || auth.email}
                 onLogout={handleLogout}
                 fixed
+                notificationsEnabled
             />
 
             <div className="min-h-[calc(100vh-73px)] w-full">
                 <MunicipioSidebar sidebarItems={municipioSidebarItems} />
 
                 <section className="min-w-0 overflow-x-auto px-4 py-5 sm:px-6 lg:ml-[290px] lg:px-10">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                        <div>
-                            <p className="text-sm font-medium text-sky-700">Administración</p>
-                            <h2 className="mt-1 text-3xl font-semibold tracking-[-0.04em] text-slate-900">
-                                Notas
-                            </h2>
-                            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-                                Revisá notas entregadas por los centros vecinales y definí su estado administrativo.
-                            </p>
-                        </div>
-
-                        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-right shadow-sm">
-                            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Municipio</p>
-                            <p className="mt-1 text-sm font-semibold text-slate-700">{auth.municipioNombre}</p>
-                        </div>
-                    </div>
+                
 
                     {feedback.message ? (
                         <div

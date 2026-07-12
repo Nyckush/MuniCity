@@ -15,8 +15,12 @@ public class Notificacion {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ciudadano_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "ciudadano_id", referencedColumnName = "id")
     private Ciudadano ciudadano;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "municipio_id", referencedColumnName = "id")
+    private Municipio municipio;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "nota_id", referencedColumnName = "id")
@@ -27,6 +31,11 @@ public class Notificacion {
     @JoinColumn(name = "observacion_id", referencedColumnName = "id")
     @JsonIgnore
     private Observacion observacion;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comunicado_municipal_id", referencedColumnName = "id")
+    @JsonIgnore
+    private ComunicadoMunicipal comunicadoMunicipal;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -61,6 +70,14 @@ public class Notificacion {
         this.ciudadano = ciudadano;
     }
 
+    public Municipio getMunicipio() {
+        return municipio;
+    }
+
+    public void setMunicipio(Municipio municipio) {
+        this.municipio = municipio;
+    }
+
     public Nota getNota() {
         return nota;
     }
@@ -75,6 +92,14 @@ public class Notificacion {
 
     public void setObservacion(Observacion observacion) {
         this.observacion = observacion;
+    }
+
+    public ComunicadoMunicipal getComunicadoMunicipal() {
+        return comunicadoMunicipal;
+    }
+
+    public void setComunicadoMunicipal(ComunicadoMunicipal comunicadoMunicipal) {
+        this.comunicadoMunicipal = comunicadoMunicipal;
     }
 
     public TipoNotificacion getTipo() {

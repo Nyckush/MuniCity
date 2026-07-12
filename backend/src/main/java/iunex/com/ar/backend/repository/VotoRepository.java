@@ -15,4 +15,6 @@ public interface VotoRepository extends JpaRepository<Voto, Long> {
     Optional<Voto> findByEleccionIdAndCiudadanoId(Long eleccionId, Long ciudadanoId);
 
     List<Voto> findAllByCiudadanoIdOrderByFechaVotoDesc(Long ciudadanoId);
+
+    List<Voto> findAllByEleccionId(Long eleccionId);
 }

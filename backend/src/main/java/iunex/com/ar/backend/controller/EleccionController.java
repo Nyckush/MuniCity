@@ -49,6 +49,19 @@ public class EleccionController {
         }
     }
 
+    @PatchMapping("/{eleccionId}/finalizar")
+    public ResponseEntity<?> finalizarEleccion(@PathVariable Long eleccionId, Authentication authentication) {
+        if (!esMunicipio(authentication)) {
+            return new ResponseEntity<>("Solo el municipio puede finalizar elecciones.", HttpStatus.FORBIDDEN);
+        }
+
+        try {
+            return new ResponseEntity<>(eleccionService.finalizarEleccion(eleccionId), HttpStatus.OK);
+        } catch (RuntimeException exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @GetMapping
     public ResponseEntity<?> listarElecciones(Authentication authentication) {
         if (!esMunicipio(authentication)) {
@@ -57,6 +70,15 @@ public class EleccionController {
 
         List<EleccionDTO> elecciones = eleccionService.listarElecciones();
         return new ResponseEntity<>(elecciones, HttpStatus.OK);
+    }
+
+    @GetMapping("/detalle")
+    public ResponseEntity<?> listarEleccionesConDetalle(Authentication authentication) {
+        if (!esMunicipio(authentication)) {
+            return new ResponseEntity<>("Solo el municipio puede consultar elecciones desde este panel.", HttpStatus.FORBIDDEN);
+        }
+
+        return new ResponseEntity<>(eleccionService.listarEleccionesConDetalle(), HttpStatus.OK);
     }
 
     private boolean esMunicipio(Authentication authentication) {

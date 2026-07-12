@@ -123,6 +123,10 @@ public class VotoService {
     }
 
     private EstadoEleccion calcularEstadoActual(Eleccion eleccion) {
+        if (eleccion.getEstado() == EstadoEleccion.FINALIZADA) {
+            return EstadoEleccion.FINALIZADA;
+        }
+
         LocalDateTime ahora = LocalDateTime.now();
 
         if (ahora.isBefore(eleccion.getFechaInicioPostulacion())) {
@@ -181,6 +185,7 @@ public class VotoService {
         dto.setCiudadanoId(candidatura.getCiudadano().getId());
         dto.setNombreCompleto(candidatura.getCiudadano().getNombreCompleto());
         dto.setApellido(candidatura.getCiudadano().getApellido());
+        dto.setFotoPerfil(candidatura.getCiudadano().getUser().getFotoPerfil());
         dto.setEstadoValidacion(candidatura.getEstadoValidacion().name());
         return dto;
     }

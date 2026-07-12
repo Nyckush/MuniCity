@@ -3,14 +3,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Eye, LoaderCircle, Mailbox } from "lucide-react";
 
 import api from "@/api/axios";
-import Navbar from "@/components/Navbar";
+import PresidentNavbar from "@/components/PresidentNavbar";
 import {
     ObservationCard,
     ObservationDetail,
 } from "@/components/observations/ObservationShared";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { clearStoredAuth, getValidStoredAuth, saveStoredAuth } from "@/lib/auth";
-import { citizenNavigationItems } from "@/lib/citizenNavigation";
 
 export default function PresidentObservations() {
     const navigate = useNavigate();
@@ -131,12 +130,11 @@ export default function PresidentObservations() {
 
     return (
         <main className="min-h-screen bg-[#E6E9F3]">
-            <Navbar
+            <PresidentNavbar
                 homeHref="/dashboard"
                 userLabel={auth.nombreCompleto || auth.email}
                 profileImageUrl={auth.fotoPerfil || ""}
                 onLogout={handleLogout}
-                navItems={citizenNavigationItems}
                 notificationsEnabled
                 profileEnabled
             />

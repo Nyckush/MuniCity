@@ -3,10 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { ClipboardPenLine, HandHeart, LoaderCircle, Vote } from "lucide-react";
 
 import api from "@/api/axios";
-import Navbar from "@/components/Navbar";
+import CitizenNavbar from "@/components/CitizenNavbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { clearStoredAuth, getValidStoredAuth, saveStoredAuth } from "@/lib/auth";
-import { citizenNavigationItems } from "@/lib/citizenNavigation";
 
 function MainActionCard({
     icon: Icon,
@@ -172,12 +171,11 @@ export default function Dashboard() {
 
     return (
         <main className="min-h-screen bg-[#E6E9F3]">
-            <Navbar
+            <CitizenNavbar
                 homeHref="/dashboard"
                 userLabel={auth?.nombreCompleto || auth?.email}
                 profileImageUrl={auth?.fotoPerfil || ""}
                 onLogout={handleLogout}
-                navItems={citizenNavigationItems}
                 notificationsEnabled
                 profileEnabled
             />

@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ClipboardList, Link2, LoaderCircle, Send, X } from "lucide-react";
+import { ClipboardList, Crosshair, Link2, LoaderCircle, Send, X } from "lucide-react";
 
 import api from "@/api/axios";
-import Navbar from "@/components/Navbar";
+import CitizenNavbar from "@/components/CitizenNavbar";
 import {
     formatDateTime,
     getObservationStatusConfig,
@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { clearStoredAuth, getValidStoredAuth, saveStoredAuth } from "@/lib/auth";
-import { citizenNavigationItems } from "@/lib/citizenNavigation";
 
 export default function CitizenObservations() {
     const navigate = useNavigate();
@@ -29,6 +28,8 @@ export default function CitizenObservations() {
     const [activePanel, setActivePanel] = useState("create");
     const [selectedObservation, setSelectedObservation] = useState(null);
     const [loadingObservationDetail, setLoadingObservationDetail] = useState(false);
+    const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+    const [locationMessage, setLocationMessage] = useState("");
 
     useEffect(() => {
         const storedAuth = getValidStoredAuth();
@@ -94,6 +95,55 @@ export default function CitizenObservations() {
         }));
     };
 
+    const buildMapsUrl = (latitude, longitude) =>
+        `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+    const handleUseCurrentLocation = () => {
+        setFormError("");
+        setLocationMessage("");
+
+        if (!navigator.geolocation) {
+            setFormError("Tu navegador no permite obtener la ubicación actual.");
+            return;
+        }
+
+        setIsDetectingLocation(true);
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const latitude = position.coords.latitude.toFixed(6);
+                const longitude = position.coords.longitude.toFixed(6);
+                const mapsUrl = buildMapsUrl(latitude, longitude);
+
+                setObservationForm((current) => ({
+                    ...current,
+                    ubicacionEnlace: mapsUrl,
+                }));
+                setLocationMessage("Ubicación capturada correctamente. Se cargó un enlace automático de Google Maps.");
+                setIsDetectingLocation(false);
+            },
+            (error) => {
+                let nextError = "No se pudo obtener tu ubicación actual.";
+
+                if (error.code === 1) {
+                    nextError = "Permiso de ubicación denegado. Podés habilitarlo o pegar un enlace manualmente.";
+                } else if (error.code === 2) {
+                    nextError = "No se pudo determinar tu ubicación en este momento.";
+                } else if (error.code === 3) {
+                    nextError = "La ubicación tardó demasiado en responder. Intentá nuevamente.";
+                }
+
+                setFormError(nextError);
+                setIsDetectingLocation(false);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0,
+            }
+        );
+    };
+
     const reloadObservations = async () => {
         const response = await api.get("/observaciones");
         const nextObservations = response.data ?? [];
@@ -156,6 +206,7 @@ export default function CitizenObservations() {
 
             await reloadObservations();
             setObservationForm(initialObservationForm);
+            setLocationMessage("");
             setShowSuccessToast(true);
             setIsSuccessToastVisible(true);
             setActivePanel("list");
@@ -199,6 +250,21 @@ export default function CitizenObservations() {
             imagePreviews.forEach((preview) => URL.revokeObjectURL(preview.url));
         };
     }, [imagePreviews]);
+
+    const citizenObservationNavbarActions = [
+        {
+            label: "Crear observación",
+            icon: Send,
+            active: activePanel === "create",
+            onClick: () => setActivePanel("create"),
+        },
+        {
+            label: "Mis observaciones",
+            icon: ClipboardList,
+            active: activePanel === "list",
+            onClick: () => setActivePanel("list"),
+        },
+    ];
 
     if (!auth) {
         return null;
@@ -320,12 +386,12 @@ export default function CitizenObservations() {
                 </div>
             ) : null}
 
-            <Navbar
+            <CitizenNavbar
                 homeHref="/dashboard"
                 userLabel={auth.nombreCompleto || auth.email}
                 profileImageUrl={auth.fotoPerfil || ""}
                 onLogout={handleLogout}
-                navItems={citizenNavigationItems}
+                contextActions={citizenObservationNavbarActions}
                 notificationsEnabled
                 profileEnabled
             />
@@ -337,45 +403,7 @@ export default function CitizenObservations() {
                     </div>
                 ) : null}
 
-                <section className="mx-auto grid w-full max-w-[62rem] gap-6 lg:grid-cols-[88px_minmax(0,1fr)]">
-                    <Card className="min-h-[100px] self-start border-0 bg-white/92 py-0 shadow-[0_18px_45px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
-                        <CardContent className="flex h-full px-[4px] py-4">
-                            <div className="flex flex-1 flex-col items-center justify-center space-y-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setActivePanel("create")}
-                                    title="Crear observación"
-                                    className={`group relative inline-flex h-16 w-16 items-center justify-center rounded-2xl transition ${
-                                        activePanel === "create"
-                                            ? "bg-sky-50 text-sky-700 ring-1 ring-sky-100"
-                                            : "bg-transparent text-slate-600 hover:bg-slate-50"
-                                    }`}
-                                >
-                                    <Send size={20} />
-                                    <span className="pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-xl bg-slate-900 px-3 py-2 text-xs font-medium text-white opacity-0 shadow-[0_12px_30px_rgba(15,23,42,0.22)] transition group-hover:opacity-100">
-                                        Crear observación
-                                    </span>
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setActivePanel("list")}
-                                    title="Mis observaciones"
-                                    className={`group relative inline-flex h-16 w-16 items-center justify-center rounded-2xl transition ${
-                                        activePanel === "list"
-                                            ? "bg-sky-50 text-sky-700 ring-1 ring-sky-100"
-                                            : "bg-transparent text-slate-600 hover:bg-slate-50"
-                                    }`}
-                                >
-                                    <ClipboardList size={20} />
-                                    <span className="pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-xl bg-slate-900 px-3 py-2 text-xs font-medium text-white opacity-0 shadow-[0_12px_30px_rgba(15,23,42,0.22)] transition group-hover:opacity-100">
-                                        Mis observaciones
-                                    </span>
-                                </button>
-                            </div>
-                        </CardContent>
-                    </Card>
-
+                <section className="mx-auto w-full max-w-[62rem]">
                     {activePanel === "create" ? (
                         <Card className="min-h-[760px] border-0 bg-white/92 py-0 shadow-[0_18px_45px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
                         <CardHeader className="px-6 pt-6">
@@ -428,14 +456,41 @@ export default function CitizenObservations() {
                                         <label className="text-sm font-medium text-slate-700" htmlFor="ubicacionEnlace">
                                             Enlace de ubicación
                                         </label>
-                                        <Input
-                                            id="ubicacionEnlace"
-                                            name="ubicacionEnlace"
-                                            value={observationForm.ubicacionEnlace}
-                                            onChange={handleInputChange}
-                                            placeholder="Pegá un enlace de Google Maps u otra ubicación"
-                                            className="h-11 rounded-xl border-slate-200 bg-white"
-                                        />
+                                        <div className="flex flex-col gap-3 sm:flex-row">
+                                            <Input
+                                                id="ubicacionEnlace"
+                                                name="ubicacionEnlace"
+                                                value={observationForm.ubicacionEnlace}
+                                                onChange={handleInputChange}
+                                                placeholder="Pegá un enlace de Google Maps u otra ubicación"
+                                                className="h-11 rounded-xl border-slate-200 bg-white"
+                                            />
+                                            <Button
+                                                type="button"
+                                                onClick={handleUseCurrentLocation}
+                                                disabled={isDetectingLocation}
+                                                className="h-11 rounded-xl bg-white px-5 text-sky-700 ring-1 ring-sky-200 hover:bg-sky-50"
+                                            >
+                                                {isDetectingLocation ? (
+                                                    <>
+                                                        <LoaderCircle className="animate-spin" size={16} />
+                                                        Ubicando...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Crosshair size={16} />
+                                                        Usar mi ubicación
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+                                        {locationMessage ? (
+                                            <p className="text-xs text-emerald-600">{locationMessage}</p>
+                                        ) : (
+                                            <p className="text-xs text-slate-500">
+                                                Podés pegar un enlace manualmente o permitir que el navegador detecte tu ubicación actual.
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div className="space-y-3">

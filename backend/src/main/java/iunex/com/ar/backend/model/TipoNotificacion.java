@@ -4,5 +4,6 @@ public enum TipoNotificacion {
     NOTA_NUEVA,
     NOTA_APROBADA,
     NOTA_RECHAZADA,
-    OBSERVACION_NUEVA
+    OBSERVACION_NUEVA,
+    COMUNICADO_NUEVO
 }

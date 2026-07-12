@@ -1,18 +1,28 @@
 package iunex.com.ar.backend.service;
 
 import iunex.com.ar.backend.dto.CrearEleccionDTO;
+import iunex.com.ar.backend.dto.EleccionCandidatoResultadoDTO;
+import iunex.com.ar.backend.dto.EleccionDetalleMunicipioDTO;
 import iunex.com.ar.backend.dto.EleccionDTO;
+import iunex.com.ar.backend.model.Candidatura;
 import iunex.com.ar.backend.model.CentroVecinal;
 import iunex.com.ar.backend.model.Eleccion;
 import iunex.com.ar.backend.model.EstadoEleccion;
+import iunex.com.ar.backend.model.Voto;
+import iunex.com.ar.backend.repository.CandidaturaRepository;
 import iunex.com.ar.backend.repository.CentroVecinalRepository;
 import iunex.com.ar.backend.repository.EleccionRepository;
+import iunex.com.ar.backend.repository.VotoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class EleccionService {
@@ -22,6 +32,12 @@ public class EleccionService {
 
     @Autowired
     private CentroVecinalRepository centroVecinalRepository;
+
+    @Autowired
+    private CandidaturaRepository candidaturaRepository;
+
+    @Autowired
+    private VotoRepository votoRepository;
 
     @Transactional
     public EleccionDTO crearEleccion(CrearEleccionDTO dto) {
@@ -89,11 +105,36 @@ public class EleccionService {
         return toDto(eleccionRepository.save(eleccion));
     }
 
+    @Transactional
+    public EleccionDTO finalizarEleccion(Long eleccionId) {
+        if (eleccionId == null) {
+            throw new RuntimeException("La elección a finalizar es obligatoria.");
+        }
+
+        Eleccion eleccion = eleccionRepository.findById(eleccionId)
+                .orElseThrow(() -> new RuntimeException("La elección seleccionada no existe."));
+
+        if (resolverEstadoActual(eleccion) == EstadoEleccion.FINALIZADA) {
+            throw new RuntimeException("La elección ya se encuentra finalizada.");
+        }
+
+        eleccion.setEstado(EstadoEleccion.FINALIZADA);
+        return toDto(eleccionRepository.save(eleccion));
+    }
+
     @Transactional(readOnly = true)
     public List<EleccionDTO> listarElecciones() {
         return eleccionRepository.findAllByOrderByFechaInicioPostulacionDesc()
                 .stream()
                 .map(this::toDto)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<EleccionDetalleMunicipioDTO> listarEleccionesConDetalle() {
+        return eleccionRepository.findAllByOrderByFechaInicioPostulacionDesc()
+                .stream()
+                .map(this::toDetailDto)
                 .toList();
     }
 
@@ -154,6 +195,19 @@ public class EleccionService {
         return EstadoEleccion.CONVOCADA;
     }
 
+    private EstadoEleccion resolverEstadoActual(Eleccion eleccion) {
+        if (eleccion.getEstado() == EstadoEleccion.FINALIZADA) {
+            return EstadoEleccion.FINALIZADA;
+        }
+
+        return calcularEstadoInicial(
+                eleccion.getFechaInicioPostulacion(),
+                eleccion.getFechaFinPostulacion(),
+                eleccion.getFechaInicioVotacion(),
+                eleccion.getFechaFinVotacion()
+        );
+    }
+
     private EleccionDTO toDto(Eleccion eleccion) {
         EleccionDTO dto = new EleccionDTO();
         dto.setId(eleccion.getId());
@@ -165,14 +219,73 @@ public class EleccionService {
         dto.setFechaFinPostulacion(eleccion.getFechaFinPostulacion());
         dto.setFechaInicioVotacion(eleccion.getFechaInicioVotacion());
         dto.setFechaFinVotacion(eleccion.getFechaFinVotacion());
-        EstadoEleccion estadoActual = calcularEstadoInicial(
-                eleccion.getFechaInicioPostulacion(),
-                eleccion.getFechaFinPostulacion(),
-                eleccion.getFechaInicioVotacion(),
-                eleccion.getFechaFinVotacion()
-        );
+        EstadoEleccion estadoActual = resolverEstadoActual(eleccion);
         eleccion.setEstado(estadoActual);
         dto.setEstado(estadoActual);
+        return dto;
+    }
+
+    private EleccionDetalleMunicipioDTO toDetailDto(Eleccion eleccion) {
+        EleccionDetalleMunicipioDTO dto = new EleccionDetalleMunicipioDTO();
+        dto.setId(eleccion.getId());
+        dto.setCentroVecinalId(eleccion.getCentroVecinal().getId());
+        dto.setCentroVecinalNombre(eleccion.getCentroVecinal().getNombre());
+        dto.setBarrioId(eleccion.getCentroVecinal().getBarrio().getId());
+        dto.setBarrioNombre(eleccion.getCentroVecinal().getBarrio().getNombre());
+        dto.setFechaInicioPostulacion(eleccion.getFechaInicioPostulacion());
+        dto.setFechaFinPostulacion(eleccion.getFechaFinPostulacion());
+        dto.setFechaInicioVotacion(eleccion.getFechaInicioVotacion());
+        dto.setFechaFinVotacion(eleccion.getFechaFinVotacion());
+
+        EstadoEleccion estadoActual = resolverEstadoActual(eleccion);
+        eleccion.setEstado(estadoActual);
+        dto.setEstado(estadoActual);
+
+        List<Candidatura> candidaturas = candidaturaRepository.findAllByEleccionIdOrderByFechaPostulacionAsc(eleccion.getId());
+        List<Voto> votos = votoRepository.findAllByEleccionId(eleccion.getId());
+        Map<Long, Long> votosPorCandidatura = votos.stream()
+                .collect(Collectors.groupingBy((voto) -> voto.getCandidatura().getId(), Collectors.counting()));
+
+        dto.setTotalPostulantes(candidaturas.size());
+        dto.setTotalVotos(votos.size());
+
+        List<EleccionCandidatoResultadoDTO> candidatos = candidaturas.stream()
+                .map((candidatura) -> {
+                    EleccionCandidatoResultadoDTO candidatoDto = new EleccionCandidatoResultadoDTO();
+                    candidatoDto.setCandidaturaId(candidatura.getId());
+                    candidatoDto.setCiudadanoId(candidatura.getCiudadano().getId());
+                    candidatoDto.setNombreCompleto(candidatura.getCiudadano().getNombreCompleto());
+                    candidatoDto.setApellido(candidatura.getCiudadano().getApellido());
+                    candidatoDto.setFotoPerfil(candidatura.getCiudadano().getUser().getFotoPerfil());
+                    candidatoDto.setEstadoValidacion(candidatura.getEstadoValidacion().name());
+                    candidatoDto.setCantidadVotos(votosPorCandidatura.getOrDefault(candidatura.getId(), 0L));
+                    return candidatoDto;
+                })
+                .sorted(
+                        Comparator.comparingLong(EleccionCandidatoResultadoDTO::getCantidadVotos)
+                                .reversed()
+                                .thenComparing(EleccionCandidatoResultadoDTO::getNombreCompleto, Comparator.nullsLast(String::compareToIgnoreCase))
+                )
+                .toList();
+
+        dto.setCandidatos(candidatos);
+
+        candidatos.stream()
+                .max(Comparator.comparingLong(EleccionCandidatoResultadoDTO::getCantidadVotos))
+                .filter((candidato) -> candidato.getCantidadVotos() > 0)
+                .ifPresent((ganador) -> {
+                    long maxVotos = ganador.getCantidadVotos();
+                    long ganadores = candidatos.stream()
+                            .filter((candidato) -> candidato.getCantidadVotos() == maxVotos)
+                            .count();
+
+                    if (ganadores == 1) {
+                        ganador.setGanador(true);
+                        dto.setGanadorNombre(ganador.getNombreCompleto());
+                        dto.setGanadorCandidaturaId(ganador.getCandidaturaId());
+                    }
+                });
+
         return dto;
     }
 }

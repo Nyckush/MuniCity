@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
     ArrowRight,
     Building2,
     CheckCircle2,
     ClipboardList,
+    Menu,
     MapPinned,
     Vote,
+    X,
 } from "lucide-react";
 
 const primaryFeatures = [
@@ -53,6 +55,16 @@ const faqs = [
 ];
 
 export default function Home() {
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    useEffect(() => {
+        document.body.style.overflow = isMobileMenuOpen ? "hidden" : "";
+
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [isMobileMenuOpen]);
+
     return (
         <main className="home-page">
             <div className="home-orb home-orb-left" />
@@ -62,13 +74,24 @@ export default function Home() {
 
             <header className="public-header" id="inicio">
                 <div className="public-header__inner">
-                    <Link className="brand" to="/">
-                        <img
-                            className="brand__logo"
-                            src="/LogoMunicity.png"
-                            alt="Logo de Municity"
-                        />
-                    </Link>
+                    <div className="public-header__mobile-row">
+                        <button
+                            type="button"
+                            onClick={() => setIsMobileMenuOpen(true)}
+                            className="public-header__menu-button"
+                            aria-label="Abrir menú"
+                        >
+                            <Menu size={18} />
+                        </button>
+
+                        <Link className="brand" to="/">
+                            <img
+                                className="brand__logo"
+                                src="/LogoMunicity.png"
+                                alt="Logo de Municity"
+                            />
+                        </Link>
+                    </div>
 
                     <nav className="public-nav" aria-label="Navegación principal">
                         {quickLinks.map((item) => (
@@ -83,6 +106,52 @@ export default function Home() {
                     </Link>
                 </div>
             </header>
+
+            {isMobileMenuOpen ? (
+                <div className="public-mobile-menu">
+                    <button
+                        type="button"
+                        className="public-mobile-menu__overlay"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        aria-label="Cerrar menú"
+                    />
+
+                    <aside className="public-mobile-menu__panel">
+                        <div className="public-mobile-menu__header">
+                            <p>Menu</p>
+                            <button
+                                type="button"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="public-mobile-menu__close"
+                                aria-label="Cerrar menú"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <nav className="public-mobile-menu__nav" aria-label="Menú principal">
+                            {quickLinks.map((item) => (
+                                <a
+                                    key={item.label}
+                                    href={item.href}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    {item.label}
+                                </a>
+                            ))}
+                        </nav>
+
+                        <div className="public-mobile-menu__actions">
+                            <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                                Iniciar sesión
+                            </Link>
+                            <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                                Registrate
+                            </Link>
+                        </div>
+                    </aside>
+                </div>
+            ) : null}
 
             <section className="hero-band">
                 <div className="hero-section">

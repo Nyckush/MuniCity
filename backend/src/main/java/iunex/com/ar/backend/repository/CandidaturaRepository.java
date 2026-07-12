@@ -17,8 +17,12 @@ public interface CandidaturaRepository extends JpaRepository<Candidatura, Long> 
 
     List<Candidatura> findAllByCiudadanoIdOrderByFechaPostulacionDesc(Long ciudadanoId);
 
+    List<Candidatura> findAllByEleccionCentroVecinalBarrioIdOrderByFechaPostulacionDesc(Long barrioId);
+
     List<Candidatura> findAllByEleccionIdAndEstadoValidacionNotOrderByFechaPostulacionAsc(
             Long eleccionId,
             EstadoValidacionCandidatura estadoValidacion
     );
+
+    List<Candidatura> findAllByEleccionIdOrderByFechaPostulacionAsc(Long eleccionId);
 }

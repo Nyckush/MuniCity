@@ -59,6 +59,17 @@ public class CandidaturaService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<CandidaturaDTO> listarPostulantesRegistrados(Authentication authentication) {
+        Ciudadano ciudadano = getCiudadanoAutenticado(authentication);
+
+        return candidaturaRepository
+                .findAllByEleccionCentroVecinalBarrioIdOrderByFechaPostulacionDesc(ciudadano.getBarrio().getId())
+                .stream()
+                .map(this::toCandidaturaDto)
+                .toList();
+    }
+
     @Transactional
     public CandidaturaDTO postularme(PostulacionRequestDTO dto, Authentication authentication) {
         if (dto == null || dto.getEleccionId() == null) {
@@ -107,6 +118,10 @@ public class CandidaturaService {
     }
 
     private EstadoEleccion calcularEstadoActual(Eleccion eleccion) {
+        if (eleccion.getEstado() == EstadoEleccion.FINALIZADA) {
+            return EstadoEleccion.FINALIZADA;
+        }
+
         LocalDateTime ahora = LocalDateTime.now();
 
         if (ahora.isBefore(eleccion.getFechaInicioPostulacion())) {
@@ -155,6 +170,8 @@ public class CandidaturaService {
         CandidaturaDTO dto = new CandidaturaDTO();
         dto.setCandidaturaId(candidatura.getId());
         dto.setEleccionId(candidatura.getEleccion().getId());
+        dto.setCiudadanoNombre(candidatura.getCiudadano().getNombreCompleto());
+        dto.setFotoPerfil(candidatura.getCiudadano().getUser().getFotoPerfil());
         dto.setCentroVecinalNombre(candidatura.getEleccion().getCentroVecinal().getNombre());
         dto.setBarrioNombre(candidatura.getEleccion().getCentroVecinal().getBarrio().getNombre());
         dto.setEstadoEleccion(calcularEstadoActual(candidatura.getEleccion()));

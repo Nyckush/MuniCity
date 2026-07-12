@@ -11,6 +11,9 @@ export default function Navbar({
     profileImageUrl = "",
     onLogout,
     navItems = [],
+    contextActions = [],
+    contextSearch = null,
+    contextSelects = [],
     fixed = false,
     notificationsEnabled = false,
     notificationsHref = "/notificaciones",
@@ -54,10 +57,8 @@ export default function Navbar({
         setIsMobileNavOpen(false);
     }, [location.pathname, location.search]);
 
-    const mobileNavItems = [
-        ...navItems,
-        ...(notificationsEnabled ? [{ label: "Notificaciones", to: notificationsHref, icon: Bell }] : []),
-    ];
+    const mobileNavItems = [...navItems];
+    const hasContextBar = contextActions.length > 0 || Boolean(contextSearch) || contextSelects.length > 0;
 
     const handleLogout = () => {
         setIsMenuOpen(false);
@@ -71,7 +72,7 @@ export default function Navbar({
                 fixed ? "fixed left-0 right-0" : "sticky"
             }`}
         >
-            <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6 md:grid md:grid-cols-[auto_1fr_auto] md:items-center lg:px-8">
                 <div className="flex items-center gap-2 md:gap-3">
                     {mobileNavItems.length > 0 ? (
                         <button
@@ -97,7 +98,7 @@ export default function Navbar({
                 </div>
 
                 {navItems.length > 0 ? (
-                    <nav className="hidden flex-wrap items-center justify-center gap-1 md:flex">
+                    <nav className="hidden flex-wrap items-center justify-center gap-2 md:flex">
                         {navItems.map((item) => {
                             const Icon = item.icon;
 
@@ -105,12 +106,11 @@ export default function Navbar({
                                 <NavLink
                                     key={item.to}
                                     to={item.to}
-                                    
                                     className={({ isActive }) =>
-                                        `inline-flex h-12 items-center gap-2 border-b-2 px-4 text-sm font-semibold transition ${
+                                        `inline-flex h-11 items-center gap-2 rounded-2xl px-4 text-sm font-semibold transition-all duration-200 ${
                                             isActive
-                                                ? "border-sky-600 text-sky-700 hover:text-sky-800  bg-sky-50"
-                                                : "border-transparent text-slate-500 hover:text-slate-800 "
+                                                ? "bg-sky-50 text-sky-700 shadow-[inset_0_0_0_1px_rgba(125,211,252,0.75)]"
+                                                : "text-slate-500 hover:-translate-y-0.5 hover:bg-slate-50 hover:text-slate-800"
                                         }`
                                     }
                                 >
@@ -133,12 +133,12 @@ export default function Navbar({
                     </nav>
                 ) : null}
 
-                <div className="ml-auto flex items-center justify-end gap-2 sm:gap-3">
+                <div className="ml-auto flex items-center justify-end gap-2 sm:gap-3 md:ml-0">
                     {notificationsEnabled ? (
                         <NavLink
                             to={notificationsHref}
                             className={({ isActive }) =>
-                                `relative hidden h-11 w-11 items-center justify-center rounded-2xl border transition md:inline-flex ${
+                                `relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border transition ${
                                     isActive
                                         ? "border-sky-200 bg-sky-50 text-sky-700"
                                         : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700"
@@ -225,6 +225,64 @@ export default function Navbar({
                 </div>
             </div>
 
+            {hasContextBar ? (
+                <div className="hidden border-t border-slate-200/80 bg-white/94 px-4 py-3 backdrop-blur md:block sm:px-6 lg:px-8">
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                        {contextSearch ? (
+                            <label className="flex min-w-[280px] max-w-[440px] flex-1 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2">
+                                {contextSearch.icon ? <contextSearch.icon size={16} className="text-slate-400" /> : null}
+                                <input
+                                    type="text"
+                                    value={contextSearch.value}
+                                    onChange={(event) => contextSearch.onChange?.(event.target.value)}
+                                    placeholder={contextSearch.placeholder}
+                                    className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+                                />
+                            </label>
+                        ) : null}
+                        {contextSelects.map((selectItem) => (
+                            <label
+                                key={selectItem.id}
+                                className="flex min-w-[180px] items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2"
+                            >
+                                {selectItem.icon ? <selectItem.icon size={16} className="text-slate-400" /> : null}
+                                <select
+                                    id={selectItem.id}
+                                    value={selectItem.value}
+                                    onChange={(event) => selectItem.onChange?.(event.target.value)}
+                                    className="w-full bg-transparent text-sm text-slate-700 outline-none"
+                                >
+                                    {selectItem.options.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                        ))}
+                        {contextActions.map((action) => {
+                            const Icon = action.icon;
+
+                            return (
+                                <button
+                                    key={action.label}
+                                    type="button"
+                                    onClick={action.onClick}
+                                    className={`inline-flex h-10 items-center gap-2 rounded-2xl px-4 text-sm font-semibold transition-all duration-200 ${
+                                        action.active
+                                            ? "bg-slate-900 text-white hover:bg-slate-800"
+                                            : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900"
+                                    }`}
+                                >
+                                    {Icon ? <Icon size={16} /> : null}
+                                    <span>{action.label}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            ) : null}
+
             {isMobileNavOpen ? (
                 <div className="fixed inset-0 z-40 md:hidden "  >
                     <button
@@ -252,6 +310,65 @@ export default function Navbar({
                                 <X size={18} />
                             </button>
                         </div>
+
+                        {hasContextBar ? (
+                            <div
+                                className="space-y-2 px-3 pb-3 pt-2"
+                                style={{ backgroundColor:"#E8EAF6", borderRight:"#888888 1px solid" }}
+                            >
+                                {contextSearch ? (
+                                    <label className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3">
+                                        {contextSearch.icon ? <contextSearch.icon size={18} className="text-slate-400" /> : null}
+                                        <input
+                                            type="text"
+                                            value={contextSearch.value}
+                                            onChange={(event) => contextSearch.onChange?.(event.target.value)}
+                                            placeholder={contextSearch.placeholder}
+                                            className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+                                        />
+                                    </label>
+                                ) : null}
+                                {contextSelects.map((selectItem) => (
+                                    <label key={selectItem.id} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3">
+                                        {selectItem.icon ? <selectItem.icon size={18} className="text-slate-400" /> : null}
+                                        <select
+                                            id={selectItem.id}
+                                            value={selectItem.value}
+                                            onChange={(event) => selectItem.onChange?.(event.target.value)}
+                                            className="w-full bg-transparent text-sm text-slate-700 outline-none"
+                                        >
+                                            {selectItem.options.map((option) => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+                                ))}
+                                {contextActions.map((action) => {
+                                    const Icon = action.icon;
+
+                                    return (
+                                        <button
+                                            key={action.label}
+                                            type="button"
+                                            onClick={() => {
+                                                setIsMobileNavOpen(false);
+                                                action.onClick?.();
+                                            }}
+                                            className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
+                                                action.active
+                                                    ? "bg-white text-sky-700"
+                                                    : "bg-transparent text-slate-600 hover:bg-white hover:text-slate-900"
+                                            }`}
+                                        >
+                                            {Icon ? <Icon size={18} className={action.active ? "text-sky-600" : "text-slate-400"} /> : null}
+                                            <span>{action.label}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        ) : null}
 
                         <nav className="flex-1 space-y-1  px-3 py-4" style={{ backgroundColor:"#E8EAF6",borderRadius: " 0px 0px 10px 0" , borderRight:"#888888 1px solid" ,borderBottom: "#888888 1px solid", boxShadow:"0 20px 42px rgba(15, 23, 42, 0.16)"}}>
                             {mobileNavItems.map((item) => {

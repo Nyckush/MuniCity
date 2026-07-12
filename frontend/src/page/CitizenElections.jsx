@@ -1,13 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2, LoaderCircle, ShieldCheck, Vote } from "lucide-react";
+import { CheckCircle2, LoaderCircle, ShieldCheck, UserRound, Vote } from "lucide-react";
 
 import api from "@/api/axios";
-import Navbar from "@/components/Navbar";
+import CitizenNavbar from "@/components/CitizenNavbar";
+import PresidentNavbar from "@/components/PresidentNavbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { clearStoredAuth, getValidStoredAuth, saveStoredAuth } from "@/lib/auth";
-import { citizenNavigationItems } from "@/lib/citizenNavigation";
+
+const runtimeConfig =
+    typeof window !== "undefined" && window.__APP_CONFIG__
+        ? window.__APP_CONFIG__
+        : {};
+
+const uploadsBaseUrl =
+    runtimeConfig.VITE_UPLOADS_BASE_URL?.trim() || import.meta.env.VITE_UPLOADS_BASE_URL?.trim() || "";
 
 const electionStateLabels = {
     CONVOCADA: "Convocada",
@@ -50,11 +58,90 @@ const getApplicationStatusLabel = (status) => applicationStateLabels[status] ?? 
 const getStatusClasses = (status) =>
     statusStyles[status] ?? "border-slate-200 bg-slate-100 text-slate-700";
 
+const getCandidateDisplayName = (candidate) => {
+    const baseName = candidate?.nombreCompleto?.trim() ?? "";
+    const lastName = candidate?.apellido?.trim() ?? "";
+
+    if (!lastName) {
+        return baseName;
+    }
+
+    if (baseName.toLowerCase().includes(lastName.toLowerCase())) {
+        return baseName;
+    }
+
+    return `${baseName} ${lastName}`.trim();
+};
+
+const resolveProfileImageUrl = (path) => {
+    if (!path) {
+        return "";
+    }
+
+    if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) {
+        return path;
+    }
+
+    if (!uploadsBaseUrl) {
+        return path;
+    }
+
+    const normalizedBaseUrl = uploadsBaseUrl.endsWith("/")
+        ? uploadsBaseUrl.slice(0, -1)
+        : uploadsBaseUrl;
+
+    return `${normalizedBaseUrl}${path.startsWith("/") ? path : `/${path}`}`;
+};
+
+const formatDate = (value) => {
+    if (!value) {
+        return "sin fecha";
+    }
+
+    return new Intl.DateTimeFormat("es-AR", {
+        dateStyle: "long",
+    }).format(new Date(value));
+};
+
+const getApplicationAvailabilityCopy = (election) => {
+    if (election.yaPostulado) {
+        return {
+            buttonLabel: "Ya estás postulado",
+            helperText: "Tu postulación ya fue registrada para esta elección.",
+            buttonClassName: "h-12 w-full rounded-full",
+        };
+    }
+
+    if (election.estadoEleccion === "POSTULACION") {
+        return {
+            buttonLabel: "Postularme",
+            helperText: `Los vecinos podrán postularse a partir del día ${formatDate(election.fechaInicioPostulacion)} y finaliza el día ${formatDate(election.fechaFinPostulacion)}.`,
+            buttonClassName:
+                "h-12 w-full rounded-full bg-emerald-600 text-white hover:bg-emerald-700",
+        };
+    }
+
+    if (election.estadoEleccion === "VOTACION" || election.estadoEleccion === "FINALIZADA") {
+        return {
+            buttonLabel: "Período finalizado",
+            helperText: "El período de postulación ya finalizó.",
+            buttonClassName: "h-12 w-full rounded-full",
+        };
+    }
+
+    return {
+        buttonLabel: "Próximamente",
+        helperText: `Los vecinos podrán postularse a partir del día ${formatDate(election.fechaInicioPostulacion)} y finaliza el día ${formatDate(election.fechaFinPostulacion)}.`,
+        buttonClassName: "h-12 w-full rounded-full",
+    };
+};
+
 export default function CitizenElections() {
     const navigate = useNavigate();
     const [auth, setAuth] = useState(null);
+    const [activePanel, setActivePanel] = useState("postularme");
     const [availableElections, setAvailableElections] = useState([]);
-    const [myApplications, setMyApplications] = useState([]);
+    const [registeredApplicants, setRegisteredApplicants] = useState([]);
     const [votingElections, setVotingElections] = useState([]);
     const [myVotes, setMyVotes] = useState([]);
     const [loadingApplications, setLoadingApplications] = useState(true);
@@ -79,13 +166,13 @@ export default function CitizenElections() {
                 const [
                     profileResponse,
                     availableResponse,
-                    applicationsResponse,
+                    registeredApplicantsResponse,
                     votingResponse,
                     myVotesResponse,
                 ] = await Promise.all([
                     api.get("/auth/me"),
                     api.get("/candidaturas/disponibles"),
-                    api.get("/candidaturas/mis-postulaciones"),
+                    api.get("/candidaturas/postulantes-registrados"),
                     api.get("/votos/disponibles"),
                     api.get("/votos/mis-votos"),
                 ]);
@@ -100,7 +187,7 @@ export default function CitizenElections() {
                 saveStoredAuth(mergedAuth);
                 setAuth(mergedAuth);
                 setAvailableElections(availableResponse.data ?? []);
-                setMyApplications(applicationsResponse.data ?? []);
+                setRegisteredApplicants(registeredApplicantsResponse.data ?? []);
                 setVotingElections(votingResponse.data ?? []);
                 setMyVotes(myVotesResponse.data ?? []);
             } catch (error) {
@@ -121,13 +208,13 @@ export default function CitizenElections() {
     };
 
     const reloadApplications = async () => {
-        const [availableResponse, applicationsResponse] = await Promise.all([
+        const [availableResponse, registeredApplicantsResponse] = await Promise.all([
             api.get("/candidaturas/disponibles"),
-            api.get("/candidaturas/mis-postulaciones"),
+            api.get("/candidaturas/postulantes-registrados"),
         ]);
 
         setAvailableElections(availableResponse.data ?? []);
-        setMyApplications(applicationsResponse.data ?? []);
+        setRegisteredApplicants(registeredApplicantsResponse.data ?? []);
     };
 
     const reloadVotes = async () => {
@@ -180,41 +267,55 @@ export default function CitizenElections() {
         }
     };
 
+    useEffect(() => {
+        if (loadingApplications || loadingVotes) {
+            return;
+        }
+
+        if (activePanel === "postularme" && availableElections.length === 0 && votingElections.length > 0) {
+            setActivePanel("votar");
+        }
+
+        if (activePanel === "votar" && votingElections.length === 0 && availableElections.length > 0) {
+            setActivePanel("postularme");
+        }
+    }, [activePanel, availableElections.length, loadingApplications, loadingVotes, votingElections.length]);
+
     if (!auth) {
         return null;
     }
 
+    const electionNavbarActions = [
+        {
+            label: "Postularme",
+            icon: ShieldCheck,
+            active: activePanel === "postularme",
+            onClick: () => setActivePanel("postularme"),
+        },
+        {
+            label: "Votar",
+            icon: Vote,
+            active: activePanel === "votar",
+            onClick: () => setActivePanel("votar"),
+        },
+    ];
+
+    const ElectionsNavbar = auth.role === "ROLE_PRESIDENTE" ? PresidentNavbar : CitizenNavbar;
+
     return (
         <main className="min-h-screen bg-[#E6E9F3]">
-            <Navbar
+            <ElectionsNavbar
                 homeHref="/dashboard"
                 userLabel={auth.nombreCompleto || auth.email}
                 profileImageUrl={auth.fotoPerfil || ""}
                 onLogout={handleLogout}
-                navItems={citizenNavigationItems}
+                contextActions={electionNavbarActions}
                 notificationsEnabled
                 profileEnabled
             />
 
             <div className="flex w-full flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                        <p className="text-sm font-medium text-sky-700">Participación ciudadana</p>
-                        <h1 className="mt-1 text-3xl font-semibold tracking-[-0.04em] text-slate-900">
-                            Elecciones del centro vecinal
-                        </h1>
-                        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-                            Consultá convocatorias de tu barrio, postulate como representante y votá
-                            a la persona que querés que presida tu centro vecinal.
-                        </p>
-                    </div>
-
-                    <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-right shadow-sm">
-                        <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Barrio</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-700">{auth.barrioNombre}</p>
-                    </div>
-                </div>
-
+                {activePanel === "votar" ? (
                 <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
                     <Card className="border-0 bg-white/92 py-0 shadow-[0_18px_45px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
                         <CardHeader className="px-6 pt-6">
@@ -303,22 +404,45 @@ export default function CitizenElections() {
                                                     return (
                                                         <div
                                                             key={candidate.candidaturaId}
-                                                            className="rounded-2xl bg-white p-4 ring-1 ring-slate-200"
+                                                            className="rounded-3xl bg-white p-4 ring-1 ring-slate-200"
                                                         >
-                                                            <div className="flex items-start justify-between gap-3">
-                                                                <div>
-                                                                    <h3 className="text-base font-semibold text-slate-900">
-                                                                        {candidate.nombreCompleto}
-                                                                    </h3>
-                                                                    <p className="mt-1 text-sm text-slate-500">
+                                                            <div className="flex items-start gap-4">
+                                                                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-sky-50 text-sky-700 ring-1 ring-sky-100">
+                                                                    {candidate.fotoPerfil ? (
+                                                                        <img
+                                                                            src={resolveProfileImageUrl(candidate.fotoPerfil)}
+                                                                            alt={getCandidateDisplayName(candidate)}
+                                                                            className="h-full w-full object-cover"
+                                                                            onError={(event) => {
+                                                                                event.currentTarget.style.display = "none";
+                                                                                const fallback = event.currentTarget.nextElementSibling;
+                                                                                if (fallback) {
+                                                                                    fallback.classList.remove("hidden");
+                                                                                }
+                                                                            }}
+                                                                        />
+                                                                    ) : null}
+                                                                    <UserRound
+                                                                        size={30}
+                                                                        className={candidate.fotoPerfil ? "hidden" : ""}
+                                                                    />
+                                                                </div>
+
+                                                                <div className="min-w-0 flex-1">
+                                                                    <div className="flex flex-wrap items-center gap-2">
+                                                                        <h3 className="text-lg font-semibold text-slate-900">
+                                                                            {getCandidateDisplayName(candidate)}
+                                                                        </h3>
+                                                                        <span
+                                                                            className={`rounded-full border px-3 py-1 text-xs font-semibold ${getStatusClasses(candidate.estadoValidacion)}`}
+                                                                        >
+                                                                            {getApplicationStatusLabel(candidate.estadoValidacion)}
+                                                                        </span>
+                                                                    </div>
+                                                                    <p className="mt-2 text-sm text-slate-500">
                                                                         Candidato del barrio
                                                                     </p>
                                                                 </div>
-                                                                <span
-                                                                    className={`rounded-full border px-3 py-1 text-xs font-semibold ${getStatusClasses(candidate.estadoValidacion)}`}
-                                                                >
-                                                                    {getApplicationStatusLabel(candidate.estadoValidacion)}
-                                                                </span>
                                                             </div>
 
                                                             <Button
@@ -333,7 +457,7 @@ export default function CitizenElections() {
                                                                     election.yaVoto ||
                                                                     submittingVoteKey === voteKey
                                                                 }
-                                                                className="mt-4 w-full rounded-full"
+                                                                className="mt-4 h-12 w-full rounded-full"
                                                             >
                                                                 {submittingVoteKey === voteKey ? (
                                                                     <>
@@ -413,24 +537,18 @@ export default function CitizenElections() {
                         </CardContent>
                     </Card>
                 </section>
+                ) : null}
 
-                <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+                {activePanel === "postularme" ? (
+                <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr] xl:items-start">
                     <Card className="border-0 bg-white/92 py-0 shadow-[0_18px_45px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
                         <CardHeader className="px-6 pt-6">
-                            <div className="flex items-center gap-3">
-                                <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 ring-1 ring-sky-100">
-                                    <Vote size={20} />
-                                </div>
-                                <div>
-                                    <CardTitle className="text-2xl font-semibold text-slate-900">
-                                        Elecciones de tu barrio
-                                    </CardTitle>
-                                    <CardDescription className="mt-1 text-sm leading-6 text-slate-500">
-                                        Postulate como presidente o representante cuando la convocatoria
-                                        esté abierta.
-                                    </CardDescription>
-                                </div>
-                            </div>
+                            <CardTitle className="text-2xl font-semibold text-slate-900">
+                                Postularme
+                            </CardTitle>
+                            <CardDescription className="text-sm leading-6 text-slate-500">
+                                Consultá el estado del período de postulación y enviá tu candidatura cuando esté habilitado.
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4 px-6 pb-6">
                             {applicationSuccess ? (
@@ -448,7 +566,7 @@ export default function CitizenElections() {
                             {loadingApplications ? (
                                 <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-6 text-sm text-slate-500 ring-1 ring-slate-200">
                                     <LoaderCircle className="animate-spin" size={18} />
-                                    Cargando elecciones disponibles...
+                                    Cargando períodos de postulación...
                                 </div>
                             ) : null}
 
@@ -458,166 +576,179 @@ export default function CitizenElections() {
                                 </div>
                             ) : null}
 
-                            {!loadingApplications &&
-                                availableElections.map((election) => {
-                                    const canApply =
-                                        election.estadoEleccion === "POSTULACION" && !election.yaPostulado;
+                            {!loadingApplications ? (
+                                <div className="grid gap-4">
+                                    {availableElections.map((election) => {
+                                        const canApply =
+                                            election.estadoEleccion === "POSTULACION" && !election.yaPostulado;
+                                        const applicationAvailabilityCopy =
+                                            getApplicationAvailabilityCopy(election);
 
-                                    return (
-                                        <article
-                                            key={election.eleccionId}
-                                            className="rounded-3xl border border-slate-200 bg-slate-50/80 p-5"
-                                        >
-                                            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                                                <div className="space-y-3">
-                                                    <div className="flex flex-wrap items-center gap-2">
-                                                        <h3 className="text-lg font-semibold text-slate-900">
-                                                            {election.centroVecinalNombre}
-                                                        </h3>
+                                        return (
+                                            <article
+                                                key={election.eleccionId}
+                                                className="w-full rounded-3xl border border-slate-200 bg-slate-50/80 p-5"
+                                            >
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    <h3 className="text-lg font-semibold text-slate-900">
+                                                        {election.centroVecinalNombre}
+                                                    </h3>
+                                                    <span
+                                                        className={`rounded-full border px-3 py-1 text-xs font-semibold ${getStatusClasses(election.estadoEleccion)}`}
+                                                    >
+                                                        {getElectionStatusLabel(election.estadoEleccion)}
+                                                    </span>
+                                                    {election.yaPostulado ? (
                                                         <span
-                                                            className={`rounded-full border px-3 py-1 text-xs font-semibold ${getStatusClasses(election.estadoEleccion)}`}
+                                                            className={`rounded-full border px-3 py-1 text-xs font-semibold ${getStatusClasses(election.estadoPostulacion)}`}
                                                         >
-                                                            {getElectionStatusLabel(election.estadoEleccion)}
+                                                            {getApplicationStatusLabel(election.estadoPostulacion)}
                                                         </span>
-                                                        {election.yaPostulado ? (
-                                                            <span
-                                                                className={`rounded-full border px-3 py-1 text-xs font-semibold ${getStatusClasses(election.estadoPostulacion)}`}
-                                                            >
-                                                                {getApplicationStatusLabel(
-                                                                    election.estadoPostulacion
-                                                                )}
-                                                            </span>
-                                                        ) : null}
-                                                    </div>
-
-                                                    <p className="text-sm text-slate-500">
-                                                        Barrio {election.barrioNombre}
-                                                    </p>
-
-                                                    <div className="grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
-                                                        <div className="rounded-2xl bg-white p-3 ring-1 ring-slate-200">
-                                                            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
-                                                                Postulación
-                                                            </p>
-                                                            <p className="mt-2">
-                                                                {formatDateTime(election.fechaInicioPostulacion)}
-                                                            </p>
-                                                            <p className="mt-1">
-                                                                {formatDateTime(election.fechaFinPostulacion)}
-                                                            </p>
-                                                        </div>
-                                                        <div className="rounded-2xl bg-white p-3 ring-1 ring-slate-200">
-                                                            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
-                                                                Votación
-                                                            </p>
-                                                            <p className="mt-2">
-                                                                {formatDateTime(election.fechaInicioVotacion)}
-                                                            </p>
-                                                            <p className="mt-1">
-                                                                {formatDateTime(election.fechaFinVotacion)}
-                                                            </p>
-                                                        </div>
-                                                    </div>
+                                                    ) : null}
                                                 </div>
 
-                                                <div className="flex min-w-[220px] flex-col gap-2">
+                                                <p className="mt-2 text-sm text-slate-500">
+                                                    Barrio {election.barrioNombre}
+                                                </p>
+
+                                                <div className="mt-4 rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+                                                    <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                                                        Período de postulación
+                                                    </p>
+                                                    <p className="mt-2 text-sm text-slate-700">
+                                                        Desde {formatDate(election.fechaInicioPostulacion)}
+                                                    </p>
+                                                    <p className="mt-1 text-sm text-slate-700">
+                                                        Hasta {formatDate(election.fechaFinPostulacion)}
+                                                    </p>
+                                                </div>
+
+                                                <div className="mt-4">
                                                     <Button
                                                         type="button"
                                                         onClick={() => handleApply(election.eleccionId)}
                                                         disabled={!canApply || submittingElectionId === election.eleccionId}
-                                                        className="w-full rounded-full"
+                                                        className={applicationAvailabilityCopy.buttonClassName}
                                                     >
                                                         {submittingElectionId === election.eleccionId ? (
                                                             <>
                                                                 <LoaderCircle className="animate-spin" size={16} />
                                                                 Enviando...
                                                             </>
-                                                        ) : election.yaPostulado ? (
-                                                            "Ya estás postulado"
-                                                        ) : canApply ? (
-                                                            "Postularme"
                                                         ) : (
-                                                            "No disponible"
+                                                            applicationAvailabilityCopy.buttonLabel
                                                         )}
                                                     </Button>
-                                                    <p className="text-xs leading-5 text-slate-500">
-                                                        Solo podés postularte en elecciones de tu propio barrio.
+                                                    <p className="mt-2 text-xs leading-5 text-slate-500">
+                                                        {applicationAvailabilityCopy.helperText}
                                                     </p>
                                                 </div>
-                                            </div>
-                                        </article>
-                                    );
-                                })}
+                                            </article>
+                                        );
+                                    })}
+                                </div>
+                            ) : null}
                         </CardContent>
                     </Card>
 
                     <Card className="border-0 bg-white/92 py-0 shadow-[0_18px_45px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
                         <CardHeader className="px-6 pt-6">
                             <CardTitle className="text-2xl font-semibold text-slate-900">
-                                Mis postulaciones
+                                Postulantes registrados
                             </CardTitle>
                             <CardDescription className="text-sm leading-6 text-slate-500">
-                                Seguimiento del estado de validación de tus presentaciones.
+                                Vecinos que ya se registraron para participar en las elecciones del barrio.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4 px-6 pb-6">
+                        <CardContent className="px-6 pb-6">
                             {loadingApplications ? (
                                 <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-6 text-sm text-slate-500 ring-1 ring-slate-200">
                                     <LoaderCircle className="animate-spin" size={18} />
-                                    Cargando tus postulaciones...
+                                    Cargando postulantes registrados...
                                 </div>
                             ) : null}
 
-                            {!loadingApplications && myApplications.length === 0 ? (
+                            {!loadingApplications && registeredApplicants.length === 0 ? (
                                 <div className="rounded-2xl bg-slate-50 px-4 py-6 text-sm text-slate-500 ring-1 ring-slate-200">
-                                    Aún no realizaste ninguna postulación.
+                                    Todavía no hay vecinos registrados en esta etapa electoral.
                                 </div>
                             ) : null}
 
                             {!loadingApplications &&
-                                myApplications.map((application) => (
-                                    <article
-                                        key={application.candidaturaId}
-                                        className="rounded-3xl border border-slate-200 bg-slate-50/80 p-4"
-                                    >
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <h3 className="text-base font-semibold text-slate-900">
-                                                {application.centroVecinalNombre}
-                                            </h3>
-                                            <span
-                                                className={`rounded-full border px-3 py-1 text-xs font-semibold ${getStatusClasses(application.estadoValidacion)}`}
-                                            >
-                                                {getApplicationStatusLabel(application.estadoValidacion)}
-                                            </span>
-                                        </div>
+                                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                    {registeredApplicants.map((application) => (
+                                        <article
+                                            key={application.candidaturaId}
+                                            className="w-full rounded-3xl border border-slate-200 bg-slate-50/80 p-4"
+                                        >
+                                            <div className="flex items-start gap-3">
+                                                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-sky-50 text-sky-700 ring-1 ring-sky-100">
+                                                    {application.fotoPerfil ? (
+                                                        <img
+                                                            src={resolveProfileImageUrl(application.fotoPerfil)}
+                                                            alt={application.ciudadanoNombre}
+                                                            className="h-full w-full object-cover"
+                                                            onError={(event) => {
+                                                                event.currentTarget.style.display = "none";
+                                                                const fallback = event.currentTarget.nextElementSibling;
+                                                                if (fallback) {
+                                                                    fallback.classList.remove("hidden");
+                                                                }
+                                                            }}
+                                                        />
+                                                    ) : null}
+                                                    <UserRound
+                                                        size={30}
+                                                        className={application.fotoPerfil ? "hidden" : ""}
+                                                    />
+                                                </div>
 
-                                        <p className="mt-2 text-sm text-slate-500">
-                                            Barrio {application.barrioNombre}
-                                        </p>
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <h3 className="text-base font-semibold text-slate-900">
+                                                            {application.ciudadanoNombre}
+                                                        </h3>
+                                                        <span
+                                                            className={`rounded-full border px-3 py-1 text-xs font-semibold ${getStatusClasses(application.estadoValidacion)}`}
+                                                        >
+                                                            {getApplicationStatusLabel(application.estadoValidacion)}
+                                                        </span>
+                                                    </div>
 
-                                        <div className="mt-4 grid gap-3 text-sm text-slate-600">
-                                            <div className="rounded-2xl bg-white p-3 ring-1 ring-slate-200">
-                                                <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
-                                                    Estado de la elección
-                                                </p>
-                                                <p className="mt-2 font-medium">
-                                                    {getElectionStatusLabel(application.estadoEleccion)}
-                                                </p>
+                                                    <p className="mt-2 text-sm text-slate-500">
+                                                        Barrio {application.barrioNombre}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div className="rounded-2xl bg-white p-3 ring-1 ring-slate-200">
-                                                <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
-                                                    Fecha de postulación
-                                                </p>
-                                                <p className="mt-2 font-medium">
-                                                    {formatDateTime(application.fechaPostulacion)}
-                                                </p>
+
+                                            <div className="mt-4 grid gap-3 text-sm text-slate-600">
+                                                <div className="rounded-2xl bg-white p-3 ring-1 ring-slate-200">
+                                                    <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                                                        Centro vecinal
+                                                    </p>
+                                                    <p className="mt-2 font-medium">
+                                                        {application.centroVecinalNombre}
+                                                    </p>
+                                                </div>
+                                                <div className="rounded-2xl bg-white p-3 ring-1 ring-slate-200">
+                                                    <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                                                        Estado y fecha
+                                                    </p>
+                                                    <p className="mt-2 font-medium">
+                                                        {getElectionStatusLabel(application.estadoEleccion)}
+                                                    </p>
+                                                    <p className="mt-1 text-slate-500">
+                                                        {formatDateTime(application.fechaPostulacion)}
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </article>
-                                ))}
+                                        </article>
+                                    ))}
+                                </div>}
                         </CardContent>
                     </Card>
                 </section>
+                ) : null}
             </div>
         </main>
     );

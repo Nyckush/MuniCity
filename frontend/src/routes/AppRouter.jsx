@@ -11,9 +11,11 @@ import PresidentNotes from "@/page/PresidentNotes";
 import PresidentObservations from "@/page/PresidentObservations";
 import Profile from "@/page/Profile";
 import Notifications from "@/page/Notifications";
+import CitizenCommunications from "@/page/CitizenCommunications";
 import MunicipioDashboard from "@/page/MunicipioDashboard";
 import MunicipioElections from "@/page/MunicipioElections";
 import MunicipioNotes from "@/page/MunicipioNotes";
+import MunicipioCommunications from "@/page/MunicipioCommunications";
 import NotePdfViewer from "@/page/NotePdfViewer";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { getValidStoredAuth } from "@/lib/auth";
@@ -71,7 +73,7 @@ export default function AppRouter() {
             <Route
                 path="/notificaciones"
                 element={
-                    <ProtectedRoute allowedRoles={["ROLE_CIUDADANO", "ROLE_PRESIDENTE"]}>
+                    <ProtectedRoute allowedRoles={["ROLE_CIUDADANO", "ROLE_PRESIDENTE", "ROLE_MUNICIPIO"]}>
                         <Notifications />
                     </ProtectedRoute>
                 }
@@ -89,6 +91,14 @@ export default function AppRouter() {
                 element={
                     <ProtectedRoute allowedRoles={["ROLE_CIUDADANO", "ROLE_PRESIDENTE"]}>
                         <ObservationsEntry />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/comunicados"
+                element={
+                    <ProtectedRoute allowedRoles={["ROLE_CIUDADANO", "ROLE_PRESIDENTE"]}>
+                        <CitizenCommunications />
                     </ProtectedRoute>
                 }
             />
@@ -121,6 +131,14 @@ export default function AppRouter() {
                 element={
                     <ProtectedRoute allowedRoles={["ROLE_MUNICIPIO"]}>
                         <MunicipioNotes />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/municipio/comunicados"
+                element={
+                    <ProtectedRoute allowedRoles={["ROLE_MUNICIPIO"]}>
+                        <MunicipioCommunications />
                     </ProtectedRoute>
                 }
             />

@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Building2, LoaderCircle, MapPin, MessageCircle, Save, UserRound } from "lucide-react";
 
 import api from "@/api/axios";
-import Navbar from "@/components/Navbar";
+import CitizenNavbar from "@/components/CitizenNavbar";
+import PresidentNavbar from "@/components/PresidentNavbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { clearStoredAuth, getValidStoredAuth, saveStoredAuth } from "@/lib/auth";
-import { citizenNavigationItems } from "@/lib/citizenNavigation";
 
 const initialForm = {
     nombreCompleto: "",
@@ -237,15 +237,25 @@ export default function Profile() {
 
     return (
         <main className="min-h-screen bg-[#E6E9F3]">
-            <Navbar
-                homeHref="/dashboard"
-                userLabel={auth.nombreCompleto || auth.email}
-                profileImageUrl={auth.fotoPerfil || ""}
-                onLogout={handleLogout}
-                navItems={citizenNavigationItems}
-                notificationsEnabled
-                profileEnabled
-            />
+            {auth.role === "ROLE_PRESIDENTE" ? (
+                <PresidentNavbar
+                    homeHref="/dashboard"
+                    userLabel={auth.nombreCompleto || auth.email}
+                    profileImageUrl={auth.fotoPerfil || ""}
+                    onLogout={handleLogout}
+                    notificationsEnabled
+                    profileEnabled
+                />
+            ) : (
+                <CitizenNavbar
+                    homeHref="/dashboard"
+                    userLabel={auth.nombreCompleto || auth.email}
+                    profileImageUrl={auth.fotoPerfil || ""}
+                    onLogout={handleLogout}
+                    notificationsEnabled
+                    profileEnabled
+                />
+            )}
 
             <div className="flex w-full flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
                 <section className="mx-auto w-full max-w-3xl space-y-6">

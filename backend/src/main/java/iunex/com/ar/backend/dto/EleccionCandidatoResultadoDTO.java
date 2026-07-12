@@ -1,6 +1,6 @@
 package iunex.com.ar.backend.dto;
 
-public class CandidatoVotacionDTO {
+public class EleccionCandidatoResultadoDTO {
 
     private Long candidaturaId;
     private Long ciudadanoId;
@@ -8,6 +8,8 @@ public class CandidatoVotacionDTO {
     private String apellido;
     private String fotoPerfil;
     private String estadoValidacion;
+    private long cantidadVotos;
+    private boolean ganador;
 
     public Long getCandidaturaId() {
         return candidaturaId;
@@ -55,5 +57,21 @@ public class CandidatoVotacionDTO {
 
     public void setEstadoValidacion(String estadoValidacion) {
         this.estadoValidacion = estadoValidacion;
+    }
+
+    public long getCantidadVotos() {
+        return cantidadVotos;
+    }
+
+    public void setCantidadVotos(long cantidadVotos) {
+        this.cantidadVotos = cantidadVotos;
+    }
+
+    public boolean isGanador() {
+        return ganador;
+    }
+
+    public void setGanador(boolean ganador) {
+        this.ganador = ganador;
     }
 }

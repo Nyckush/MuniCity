@@ -9,6 +9,8 @@ public class CandidaturaDTO {
 
     private Long candidaturaId;
     private Long eleccionId;
+    private String ciudadanoNombre;
+    private String fotoPerfil;
     private String centroVecinalNombre;
     private String barrioNombre;
     private EstadoEleccion estadoEleccion;
@@ -29,6 +31,22 @@ public class CandidaturaDTO {
 
     public void setEleccionId(Long eleccionId) {
         this.eleccionId = eleccionId;
+    }
+
+    public String getCiudadanoNombre() {
+        return ciudadanoNombre;
+    }
+
+    public void setCiudadanoNombre(String ciudadanoNombre) {
+        this.ciudadanoNombre = ciudadanoNombre;
+    }
+
+    public String getFotoPerfil() {
+        return fotoPerfil;
+    }
+
+    public void setFotoPerfil(String fotoPerfil) {
+        this.fotoPerfil = fotoPerfil;
     }
 
     public String getCentroVecinalNombre() {

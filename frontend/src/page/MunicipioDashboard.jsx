@@ -212,6 +212,7 @@ export default function MunicipioDashboard() {
                 userLabel={auth.municipioNombre || auth.email}
                 onLogout={handleLogout}
                 fixed
+                notificationsEnabled
             />
 
             <div className="min-h-[calc(100vh-73px)] w-full">

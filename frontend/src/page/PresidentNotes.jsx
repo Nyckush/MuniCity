@@ -1,15 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ChevronDown, Eye, FileText, HandHeart, Handshake, LoaderCircle, MapPin, MessageCircle, NotebookPen, Share2, X } from "lucide-react";
+import { ChevronDown, Eye, HandHeart, Handshake, LoaderCircle, MapPin, MessageCircle, NotebookPen, Search, Share2, SlidersHorizontal, X } from "lucide-react";
 
 import api from "@/api/axios";
-import Navbar from "@/components/Navbar";
+import CitizenNavbar from "@/components/CitizenNavbar";
+import PresidentNavbar from "@/components/PresidentNavbar";
 import TiptapEditor from "@/components/TiptapEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { clearStoredAuth, getValidStoredAuth, saveStoredAuth } from "@/lib/auth";
-import { citizenNavigationItems } from "@/lib/citizenNavigation";
 import { generateNotePdfBlob } from "@/lib/notePdf";
 
 const runtimeConfig =
@@ -240,7 +240,7 @@ function NoteList({
             <article
                 key={note.id}
                 id={`note-${note.id}`}
-                className={`rounded-3xl border bg-[#ffffff] p-5 transition shadow-[0_14px_32px_rgba(15,23,42,0.08)] ${
+                className={`w-full rounded-3xl border bg-[#ffffff] p-4 transition shadow-[0_14px_32px_rgba(15,23,42,0.08)] sm:p-5 ${
                     highlightedNoteId === note.id
                         ? "border-sky-300 shadow-[0_18px_40px_rgba(33,119,213,0.14)]"
                         : "border-slate-200"
@@ -294,12 +294,12 @@ function NoteList({
                         <p className="mt-2 text-sm leading-6 text-slate-600">{note.motivoEstado}</p>
                     </div>
                 ) : null}
-                <div className="mt-5 flex flex-wrap items-center justify-start gap-3 border-t border-slate-200 px-4 pt-4">
+                <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3">
                     <Button
                         type="button"
                         onClick={() => onSupport(note.id)}
                         disabled={note.apoyadaPorMi || supportingNoteId === note.id}
-                        className={`h-12 px-16 text-base font-medium ${
+                        className={`h-10 px-4 text-sm font-medium ${
                             note.apoyadaPorMi
                                 ? "bg-transparent text-emerald-700 hover:bg-emerald-50"
                                 : "bg-transparent text-slate-700 hover:bg-slate-50"
@@ -322,18 +322,18 @@ function NoteList({
                             </>
                         )}
                     </Button>
-                    <div className="border-l border-slate-200 pl-3">
+                    <div>
                         <Button
                             type="button"
                             onClick={() => onPreview(note.id)}
-                            className="h-12 bg-transparent px-16 text-base font-medium text-slate-700 hover:bg-slate-50"
+                            className="h-10 bg-transparent px-4 text-sm font-medium text-slate-700 hover:bg-slate-50"
                         >
                             <Eye size={16} />
                             Ver nota
                         </Button>
                     </div>
                     {canShareNote?.(note) ? (
-                        <div className="relative border-l border-slate-200 pl-3">
+                        <div className="relative">
                             <Button
                                 type="button"
                                 onClick={() =>
@@ -341,7 +341,7 @@ function NoteList({
                                         current === note.id ? null : note.id
                                     )
                                 }
-                                className="h-12 bg-transparent px-8 text-base font-medium text-emerald-700 hover:bg-emerald-50"
+                                className="h-10 bg-transparent px-4 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
                             >
                                 <Share2 size={16} />
                                 Compartir
@@ -386,6 +386,7 @@ export default function PresidentNotes() {
     const location = useLocation();
     const [auth, setAuth] = useState(null);
     const [noteForm, setNoteForm] = useState(initialNoteForm);
+    const [isCreatePanelOpen, setIsCreatePanelOpen] = useState(false);
     const [notes, setNotes] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedScope, setSelectedScope] = useState("TODOS");
@@ -467,6 +468,7 @@ export default function PresidentNotes() {
             await api.post("/notas", noteForm);
             await reloadNotes();
             setNoteForm(initialNoteForm);
+            setIsCreatePanelOpen(false);
             setNoteSuccess("La nota se publicó correctamente.");
             setSuccessToastType("publish");
             setShowSuccessToast(true);
@@ -584,9 +586,7 @@ export default function PresidentNotes() {
         return `${window.location.origin}/notas/compartir/${noteId}`;
     };
 
-    const canShareNote = (note) =>
-        auth?.role === "ROLE_PRESIDENTE" &&
-        note.autorCiudadanoId === auth?.ciudadanoId;
+    const canShareNote = (note) => Boolean(note?.id);
 
     const buildShareMessage = (note) => {
         const noteUrl = buildPublicShareUrl(note.id);
@@ -695,6 +695,49 @@ export default function PresidentNotes() {
                   icon: NotebookPen,
               };
 
+    const presidentNoteNavbarActions = [
+        {
+            label: isCreatePanelOpen ? "Ocultar crear" : "Crear nota",
+            icon: NotebookPen,
+            active: isCreatePanelOpen,
+            onClick: () => setIsCreatePanelOpen((current) => !current),
+        },
+    ];
+
+    const presidentNoteNavbarSearch = {
+        icon: Search,
+        value: searchTerm,
+        onChange: setSearchTerm,
+        placeholder: "Buscá por título, contenido, categoría o autor...",
+    };
+
+    const presidentNoteNavbarSelects = [
+        {
+            id: "navbarFiltroScopeNotas",
+            icon: SlidersHorizontal,
+            value: selectedScope,
+            onChange: setSelectedScope,
+            options: noteScopeOptions,
+        },
+    ];
+
+    const noteNavbarSearch = {
+        icon: Search,
+        value: searchTerm,
+        onChange: setSearchTerm,
+        placeholder: "Buscá por título, contenido, categoría o autor...",
+    };
+
+    const noteNavbarSelects = [
+        {
+            id: "navbarFiltroScopeNotas",
+            icon: SlidersHorizontal,
+            value: selectedScope,
+            onChange: setSelectedScope,
+            options: noteScopeOptions,
+        },
+    ];
+
     if (!auth) {
         return null;
     }
@@ -778,15 +821,30 @@ export default function PresidentNotes() {
                 </div>
             ) : null}
 
-            <Navbar
-                homeHref="/dashboard"
-                userLabel={auth.nombreCompleto || auth.email}
-                profileImageUrl={auth.fotoPerfil || ""}
-                onLogout={handleLogout}
-                navItems={citizenNavigationItems}
-                notificationsEnabled
-                profileEnabled
-            />
+            {auth.role === "ROLE_PRESIDENTE" ? (
+                <PresidentNavbar
+                    homeHref="/dashboard"
+                    userLabel={auth.nombreCompleto || auth.email}
+                    profileImageUrl={auth.fotoPerfil || ""}
+                    onLogout={handleLogout}
+                    contextActions={presidentNoteNavbarActions}
+                    contextSearch={presidentNoteNavbarSearch}
+                    contextSelects={presidentNoteNavbarSelects}
+                    notificationsEnabled
+                    profileEnabled
+                />
+            ) : (
+                <CitizenNavbar
+                    homeHref="/dashboard"
+                    userLabel={auth.nombreCompleto || auth.email}
+                    profileImageUrl={auth.fotoPerfil || ""}
+                    onLogout={handleLogout}
+                    contextSearch={noteNavbarSearch}
+                    contextSelects={noteNavbarSelects}
+                    notificationsEnabled
+                    profileEnabled
+                />
+            )}
 
             <div className="flex w-full flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
            
@@ -797,148 +855,105 @@ export default function PresidentNotes() {
                     </div>
                 ) : null}
 
-                {auth.role === "ROLE_PRESIDENTE" ? (
-                    <Card className="mx-auto w-full border-0 bg-white/92 py-0 shadow-[0_18px_45px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70 xl:w-[80%]">
-                        <CardHeader className="px-6 pt-6">
-                            <div className="flex items-center gap-3">
-                                <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 ring-1 ring-sky-100">
-                                    <NotebookPen size={20} />
-                                </div>
-                                <div>
-                                    <CardTitle className="text-2xl font-semibold text-slate-900">
-                                        Publicar nota
-                                    </CardTitle>
-                                    <CardDescription className="mt-1 text-sm leading-6 text-slate-500">
-                                        Compartí novedades y propuestas oficiales de tu centro vecinal.
-                                    </CardDescription>
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="px-6 pb-6">
-                            <form className="space-y-4" onSubmit={handleCreateNote}>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-700" htmlFor="titulo">
-                                        Título
-                                    </label>
-                                    <Input
-                                        id="titulo"
-                                        name="titulo"
-                                        value={noteForm.titulo}
-                                        onChange={handleNoteChange}
-                                        placeholder="Ej. Reunión vecinal de esta semana"
-                                        className="h-11 rounded-xl border-slate-200 bg-white"
-                                        required
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-700" htmlFor="categoria">
-                                        Categoría
-                                    </label>
-                                    <select
-                                        id="categoria"
-                                        name="categoria"
-                                        value={noteForm.categoria}
-                                        onChange={handleNoteChange}
-                                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
-                                        required
-                                    >
-                                        {noteCategoryOptions.map((option) => (
-                                            <option key={option.value} value={option.value}>
-                                                {option.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-700" htmlFor="contenido">
-                                        Contenido
-                                    </label>
-                                    <TiptapEditor
-                                        value={noteForm.contenido}
-                                        onChange={(html) =>
-                                            setNoteForm((current) => ({
-                                                ...current,
-                                                contenido: html,
-                                            }))
-                                        }
-                                        placeholder="Escribí la nota o propuesta que querés compartir..."
-                                    />
-                                </div>
-
-                                <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-4">
-                                    <p className="text-sm font-semibold text-slate-900">
-                                        Difusión automática habilitada
-                                    </p>
-                                    <p className="mt-1 text-sm text-slate-500">
-                                        Esta nota incluirá siempre los accesos de WhatsApp y Facebook del centro vecinal para facilitar su difusión y apoyo.
-                                    </p>
-                                </div>
-
-                                <Button
-                                    type="submit"
-                                    disabled={submittingNote}
-                                    className="h-11 w-full rounded-xl bg-[linear-gradient(135deg,#2177d5,#2db6d5)] px-8 text-white shadow-[0_18px_35px_rgba(33,119,213,0.24)] hover:opacity-95"
-                                >
-                                    {submittingNote ? (
-                                        <>
-                                            <LoaderCircle className="animate-spin" size={18} />
-                                            Publicando...
-                                        </>
-                                    ) : (
-                                        "Publicar nota"
-                                    )}
-                                </Button>
-                            </form>
-                        </CardContent>
-                    </Card>
-                ) : null}
-
                 <Card className="mx-auto w-full border-0 bg-transparent py-0 shadow-none ring-0 xl:w-[80%]">
                    
-                    <CardContent className="space-y-8 px-6 pb-6">
-                        <div className="rounded-3xl border border-slate-200 bg-[#ffffff] p-5 shadow-[0_14px_32px_rgba(15,23,42,0.08)]">
-                            <div className="mb-4">
-                                <h3 className="text-lg font-semibold text-slate-900">Buscar y filtrar</h3>
-                                <p className="mt-1 text-sm leading-6 text-slate-500">
-                                    Encontrá notas por contenido, autor o alcance del barrio.
-                                </p>
-                            </div>
+                    <CardContent className="space-y-8 px-0 pb-6 sm:px-3 lg:px-6">
+                        {auth.role === "ROLE_PRESIDENTE" && isCreatePanelOpen ? (
+                            <div className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_18px_38px_rgba(15,62,106,0.08)]">
+                                        <div className="mb-4">
+                                            <h3 className="text-lg font-semibold text-slate-900">Crear nueva nota</h3>
+                                            <p className="mt-1 text-sm leading-6 text-slate-500">
+                                                Compartí novedades y propuestas oficiales de tu centro vecinal sin salir de este panel.
+                                            </p>
+                                        </div>
 
-                            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_240px]">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-700" htmlFor="busquedaNotas">
-                                    Buscar notas
-                                    </label>
-                                    <Input
-                                        id="busquedaNotas"
-                                        value={searchTerm}
-                                        onChange={(event) => setSearchTerm(event.target.value)}
-                                        placeholder="Buscá por título, contenido, categoría o autor..."
-                                        className="h-11 rounded-xl border-slate-200 bg-white"
-                                    />
-                                </div>
+                                        <form className="space-y-4" onSubmit={handleCreateNote}>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-slate-700" htmlFor="titulo">
+                                                    Título
+                                                </label>
+                                                <Input
+                                                    id="titulo"
+                                                    name="titulo"
+                                                    value={noteForm.titulo}
+                                                    onChange={handleNoteChange}
+                                                    placeholder="Ej. Reunión vecinal de esta semana"
+                                                    className="h-11 rounded-xl border-slate-200 bg-white"
+                                                    required
+                                                />
+                                            </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-700" htmlFor="filtroScopeNotas">
-                                    Filtro
-                                    </label>
-                                    <select
-                                        id="filtroScopeNotas"
-                                        value={selectedScope}
-                                        onChange={(event) => setSelectedScope(event.target.value)}
-                                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
-                                    >
-                                        {noteScopeOptions.map((option) => (
-                                            <option key={option.value} value={option.value}>
-                                                {option.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-slate-700" htmlFor="categoria">
+                                                    Categoría
+                                                </label>
+                                                <select
+                                                    id="categoria"
+                                                    name="categoria"
+                                                    value={noteForm.categoria}
+                                                    onChange={handleNoteChange}
+                                                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                                                    required
+                                                >
+                                                    {noteCategoryOptions.map((option) => (
+                                                        <option key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-slate-700" htmlFor="contenido">
+                                                    Contenido
+                                                </label>
+                                                <TiptapEditor
+                                                    value={noteForm.contenido}
+                                                    onChange={(html) =>
+                                                        setNoteForm((current) => ({
+                                                            ...current,
+                                                            contenido: html,
+                                                        }))
+                                                    }
+                                                    placeholder="Escribí la nota o propuesta que querés compartir..."
+                                                />
+                                            </div>
+
+                                            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-4">
+                                                <p className="text-sm font-semibold text-slate-900">
+                                                    Difusión automática habilitada
+                                                </p>
+                                                <p className="mt-1 text-sm text-slate-500">
+                                                    Esta nota incluirá siempre los accesos de WhatsApp y Facebook del centro vecinal para facilitar su difusión y apoyo.
+                                                </p>
+                                            </div>
+
+                                            <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                                                <Button
+                                                    type="button"
+                                                    onClick={() => setIsCreatePanelOpen(false)}
+                                                    className="h-11 rounded-xl bg-white px-6 text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
+                                                >
+                                                    Cancelar
+                                                </Button>
+                                                <Button
+                                                    type="submit"
+                                                    disabled={submittingNote}
+                                                    className="h-11 rounded-xl bg-[linear-gradient(135deg,#2177d5,#2db6d5)] px-8 text-white shadow-[0_18px_35px_rgba(33,119,213,0.24)] hover:opacity-95"
+                                                >
+                                                    {submittingNote ? (
+                                                        <>
+                                                            <LoaderCircle className="animate-spin" size={18} />
+                                                            Publicando...
+                                                        </>
+                                                    ) : (
+                                                        "Publicar nota"
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </form>
                             </div>
-                        </div>
+                        ) : null}
 
                         {selectedScope !== "OTROS" ? (
                             <section className="space-y-4">

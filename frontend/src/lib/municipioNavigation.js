@@ -1,4 +1,4 @@
-import { FileText, LayoutDashboard, Vote } from "lucide-react";
+import { FileText, LayoutDashboard, Megaphone, Vote } from "lucide-react";
 
 export const municipioSidebarItems = [
     {
@@ -18,5 +18,11 @@ export const municipioSidebarItems = [
         label: "Notas",
         icon: FileText,
         to: "/municipio/notas",
+    },
+    {
+        id: "comunicados",
+        label: "Comunicados",
+        icon: Megaphone,
+        to: "/municipio/comunicados",
     },
 ];
