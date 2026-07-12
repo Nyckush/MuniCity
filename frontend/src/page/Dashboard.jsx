@@ -17,6 +17,7 @@ function MainActionCard({
     panelClassName,
     imageSrc,
     imageAlt,
+    imageClassName,
     onAction,
 }) {
     return (
@@ -38,7 +39,7 @@ function MainActionCard({
                         <img
                             src={imageSrc}
                             alt={imageAlt ?? title}
-                            className="h-[220px] w-full object-cover object-center"
+                            className={`h-[220px] w-full object-cover object-center ${imageClassName ?? ""}`}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/18 via-transparent to-transparent" />
                     </div>
@@ -132,8 +133,9 @@ export default function Dashboard() {
             eyebrow: "Participacion vecinal",
             description: "Descubrí propuestas y comunicados de tu barrio para sumar tu apoyo a las notas que impulsan mejoras concretas.",
             icon: HandHeart,
-            imageSrc: "/ApoyoNotas.png",
+            imageSrc: "/ApoyoNotas.webp",
             imageAlt: "Vecinos apoyando notas barriales",
+            imageClassName: "object-center",
             panelClassName: "bg-[linear-gradient(135deg,#0f3e6a_0%,#167ac6_48%,#27c2c8_100%)]",
             accentClassName: "text-rose-50",
             onAction: () => navigate("/notas"),
@@ -143,8 +145,9 @@ export default function Dashboard() {
             eyebrow: "Centro vecinal",
             description: "Envia una observacion o problemas del barrio a tu centro vecinal para que puedan revisarlos y darles seguimiento.",
             icon: ClipboardPenLine,
-            imageSrc: "/observacion.png",
+            imageSrc: "/observacion.webp",
             imageAlt: "Vecino enviando una observacion barrial",
+            imageClassName: "object-center",
             panelClassName: "bg-[linear-gradient(135deg,#804c17_0%,#d58924_45%,#f0bb3c_100%)]",
             accentClassName: "text-amber-50",
             onAction: () => navigate("/observaciones"),
@@ -154,8 +157,9 @@ export default function Dashboard() {
             eyebrow: "Vida democratica",
             description: "Vota por un nuevo presidente o postulate como uno para representar a tu barrio en la proxima etapa vecinal.",
             icon: Vote,
-            imageSrc: "/elecciones.png",
+            imageSrc: "/elecciones.webp",
             imageAlt: "Vecinos participando en elecciones barriales",
+            imageClassName: "object-center",
             panelClassName: "bg-[linear-gradient(135deg,#1f3b27_0%,#23834f_44%,#64c27b_100%)]",
             accentClassName: "text-emerald-50",
             onAction: () => navigate("/elecciones"),

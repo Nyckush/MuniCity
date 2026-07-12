@@ -17,6 +17,7 @@ function MainActionCard({
     panelClassName,
     imageSrc,
     imageAlt,
+    imageClassName,
     onAction,
 }) {
     return (
@@ -38,7 +39,7 @@ function MainActionCard({
                         <img
                             src={imageSrc}
                             alt={imageAlt ?? title}
-                            className="h-[220px] w-full object-cover object-center"
+                            className={`h-[220px] w-full object-cover object-center ${imageClassName ?? ""}`}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/18 via-transparent to-transparent" />
                     </div>
@@ -154,8 +155,9 @@ export default function Dashboard() {
             eyebrow: "Representacion barrial",
             description: "Seguí el proceso electoral del barrio, revisá postulaciones y acompañá la participación democrática.",
             icon: Vote,
-            imageSrc: "/elecciones.png",
+            imageSrc: "/elecciones.webp",
             imageAlt: "Seguimiento de elecciones barriales",
+            imageClassName: "object-center",
             panelClassName: "bg-[linear-gradient(135deg,#1f3b27_0%,#23834f_44%,#64c27b_100%)]",
             accentClassName: "text-emerald-50",
             onAction: () => navigate("/elecciones"),

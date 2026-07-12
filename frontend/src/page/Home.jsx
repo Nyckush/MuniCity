@@ -11,19 +11,19 @@ import {
 
 const primaryFeatures = [
     {
-        image: "/apoyo.jpg",
+        image: "/apoyo.png",
         title: "Apoya Propuestas Barriales",
         description:
             "Respalda iniciativas de tu barrio y ayudá a que las prioridades vecinales ganen visibilidad real.",
     },
     {
-        image: "/mapa.jpg",
+        image: "/mapa.png",
         title: "Sigue el Estado de Trámites",
         description:
             "Consultá avances, revisiones y resoluciones sin perderte entre llamadas, papeles o demoras.",
     },
     {
-        image: "/comunicacion+.jpg",
+        image: "/comunicacion+.png",
         title: "Comunica Observaciones",
         description:
             "Reportá problemas cotidianos como iluminación, limpieza o baches de forma simple y ordenada.",
@@ -117,15 +117,24 @@ export default function Home() {
                 <div className="feature-grid">
                     {primaryFeatures.map(({ image, title, description }) => (
                         <article key={title} className="feature-card">
-                            <div className="feature-card__icon">
+                            <div
+                                className="feature-card__icon"
+                                style={{
+                                    width: "4.8rem",
+                                    height: "4.8rem",
+                                    borderRadius: "24px",
+                                }}
+                            >
                                 <img
                                     src={image}
                                     alt={title}
                                     style={{
                                         width: "100%",
                                         height: "100%",
-                                        objectFit: "cover",
-                                        borderRadius: "12px",
+                                        objectFit: "contain",
+                                        padding: "0.9rem",
+                                        background: "#ffffff",
+                                        borderRadius: "18px",
                                     }}
                                 />
                             </div>
