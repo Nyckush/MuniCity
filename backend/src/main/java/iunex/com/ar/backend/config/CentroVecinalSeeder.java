@@ -90,7 +90,13 @@ public class CentroVecinalSeeder implements CommandLineRunner {
             CentroVecinal centroVecinal = centroVecinalRepository.findByBarrioId(barrio.getId()).orElseGet(CentroVecinal::new);
             centroVecinal.setNombre(data.centroVecinalNombre().trim().toUpperCase());
             centroVecinal.setBarrio(barrio);
-            centroVecinal.setPresidente(ciudadano);
+
+            if ("ROLE_PRESIDENTE".equals(data.role())) {
+                centroVecinal.setPresidente(ciudadano);
+            } else if (centroVecinal.getPresidente() == null) {
+                centroVecinal.setPresidente(ciudadano);
+            }
+
             centroVecinalRepository.save(centroVecinal);
         }
 
