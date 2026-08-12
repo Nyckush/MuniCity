@@ -17,18 +17,14 @@ public class BarrioService {
         if (barrio == null || barrio.getNombre() == null || barrio.getNombre().isBlank()) {
             throw new RuntimeException("El nombre del barrio es obligatorio.");
         }
-
         // Limpiamos espacios en blanco de los costados y pasamos a mayúsculas para estandarizar
         String nombreFormateado = barrio.getNombre().trim().toUpperCase();
-
         if (barrioRepository.existsByNombre(nombreFormateado)) {
             throw new RuntimeException("El barrio '" + nombreFormateado + "' ya existe.");
         }
-
         barrio.setNombre(nombreFormateado);
         return barrioRepository.save(barrio);
     }
-
     // 2. Traer todos los barrios para el Select del frontend
     public List<Barrio> obtenerTodos() {
         return barrioRepository.findAll();
