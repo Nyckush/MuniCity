@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BarChart3, FileText, Landmark, LayoutDashboard, UsersRound, Vote } from "lucide-react";
+import { BarChart3, FileText, Landmark, LayoutDashboard, Search, UsersRound, Vote } from "lucide-react";
 
 import api from "@/api/axios";
 import MunicipioNavbar from "@/components/MunicipioNavbar";
@@ -48,6 +48,7 @@ export default function MunicipioDashboard() {
     const [barrios, setBarrios] = useState([]);
     const [notes, setNotes] = useState([]);
     const [loadingPanel, setLoadingPanel] = useState(true);
+    const [neighborhoodSearch, setNeighborhoodSearch] = useState("");
 
     useEffect(() => {
         const storedAuth = getValidStoredAuth();
@@ -120,7 +121,15 @@ export default function MunicipioDashboard() {
             }));
     }, [barrios]);
 
-    const maxPopulation = neighborhoodsByPopulation[0]?.habitantesEstimados ?? 0;
+    const filteredNeighborhoodsByPopulation = useMemo(() => {
+        const normalizedSearch = neighborhoodSearch.trim().toLowerCase();
+
+        return neighborhoodsByPopulation
+            .filter((barrio) => !normalizedSearch || barrio.nombre.toLowerCase().includes(normalizedSearch))
+            .slice(0, 4);
+    }, [neighborhoodSearch, neighborhoodsByPopulation]);
+
+    const maxPopulation = filteredNeighborhoodsByPopulation[0]?.habitantesEstimados ?? 0;
 
     const notesByNeighborhood = useMemo(() => {
         const counts = notes.reduce((accumulator, note) => {
@@ -275,32 +284,44 @@ export default function MunicipioDashboard() {
                     <section className="mt-6 grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
                         <Card className="border border-slate-200/80 bg-white/94 py-0 shadow-[0_24px_70px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
                             <CardHeader className="px-8 pt-8">
-                                <div className="flex items-center gap-3">
-                                    <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 ring-1 ring-sky-100">
-                                        <UsersRound size={20} />
+                                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 ring-1 ring-sky-100">
+                                            <UsersRound size={20} />
+                                        </div>
+                                        <div>
+                                            <CardTitle className="text-2xl font-semibold text-slate-900">
+                                                Habitantes por barrio
+                                            </CardTitle>
+                                            <CardDescription className="text-sm leading-6 text-slate-500">
+                                                Comparativa de habitantes estimados para cada barrio cargado en el sistema.
+                                            </CardDescription>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <CardTitle className="text-2xl font-semibold text-slate-900">
-                                            Habitantes por barrio
-                                        </CardTitle>
-                                        <CardDescription className="text-sm leading-6 text-slate-500">
-                                            Comparativa de habitantes estimados para cada barrio cargado en el sistema.
-                                        </CardDescription>
+                                    <div className="relative w-full lg:max-w-xs">
+                                        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                        <input
+                                            type="text"
+                                            value={neighborhoodSearch}
+                                            onChange={(event) => setNeighborhoodSearch(event.target.value)}
+                                            placeholder="Buscar barrio"
+                                            className="h-11 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-4 text-sm text-slate-700 shadow-sm outline-none transition focus:border-sky-300 focus:ring-2 focus:ring-sky-100"
+                                        />
                                     </div>
                                 </div>
                             </CardHeader>
                             <CardContent className="space-y-4 px-6 pb-6">
-                                <div className="overflow-x-auto">
-                                    <div className="min-w-[560px] rounded-3xl bg-slate-50/80 p-5 ring-1 ring-slate-200">
+                                <div className="rounded-3xl bg-slate-50/80 p-5 ring-1 ring-slate-200">
+                                    {filteredNeighborhoodsByPopulation.length > 0 ? (
                                         <div className="flex h-[320px] items-end gap-4">
-                                            {neighborhoodsByPopulation.map((barrio) => (
+                                            {filteredNeighborhoodsByPopulation.map((barrio) => (
                                                 <div key={barrio.id} className="flex min-w-0 flex-1 flex-col items-center gap-3">
                                                     <p className="text-xs font-semibold text-slate-600">
                                                         {barrio.habitantesEstimados}
                                                     </p>
                                                     <div className="flex h-60 w-full items-end justify-center rounded-2xl bg-white/80 px-2 py-2 ring-1 ring-slate-200">
                                                         <div
-                                                            className="w-full max-w-[56px] rounded-t-2xl bg-[linear-gradient(180deg,#27c6c7_0%,#1f78d5_68%,#0f3b68_100%)] shadow-[0_18px_30px_rgba(31,120,213,0.24)]"
+                                                            className="w-full max-w-[76px] rounded-t-2xl bg-[linear-gradient(180deg,#27c6c7_0%,#1f78d5_68%,#0f3b68_100%)] shadow-[0_18px_30px_rgba(31,120,213,0.24)]"
                                                             style={{
                                                                 height: getBarWidth(
                                                                     barrio.habitantesEstimados,
@@ -315,7 +336,13 @@ export default function MunicipioDashboard() {
                                                 </div>
                                             ))}
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <div className="flex h-[320px] items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white/70 px-6 text-center">
+                                            <p className="max-w-sm text-sm leading-6 text-slate-500">
+                                                No encontramos barrios con ese nombre. Probá con otra búsqueda.
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>
