@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Building2, CalendarDays, CheckCircle2, ChevronLeft, Landmark, LoaderCircle, Mail, ShieldCheck, UserRound } from "lucide-react";
+import { Building2, CheckCircle2, ChevronLeft, Landmark, LoaderCircle, Mail, ShieldCheck, UserRound } from "lucide-react";
 
 import api from "@/api/axios";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,6 @@ import { getDashboardRouteByRole, saveStoredAuth } from "@/lib/auth";
 
 const initialForm = {
     email: "",
-    username: "",
     password: "",
     confirmPassword: "",
     nombreCompleto: "",
@@ -21,6 +20,11 @@ const initialForm = {
     dni: "",
     fechaNacimiento: "",
     barrioId: "",
+};
+
+const CITIZEN_REGISTRATION_DEFAULTS = {
+    apellido: "No informado",
+    fechaNacimiento: "1900-01-01",
 };
 
 const highlights = [
@@ -111,19 +115,17 @@ export default function Register() {
 
         try {
             const trimmedEmail = form.email.trim();
-            const trimmedUsername = form.username.trim();
             const trimmedNombreCompleto = form.nombreCompleto.trim();
-            const trimmedApellido = form.apellido.trim();
             const trimmedDni = form.dni.trim();
 
             await api.post("/ciudadanos/registrar", {
                 email: trimmedEmail,
-                username: trimmedUsername,
+                username: trimmedNombreCompleto,
                 password: form.password,
                 nombreCompleto: trimmedNombreCompleto,
-                apellido: trimmedApellido,
+                apellido: CITIZEN_REGISTRATION_DEFAULTS.apellido,
                 dni: trimmedDni,
-                fechaNacimiento: form.fechaNacimiento,
+                fechaNacimiento: CITIZEN_REGISTRATION_DEFAULTS.fechaNacimiento,
                 barrioId: Number(form.barrioId),
             });
 
@@ -203,19 +205,6 @@ export default function Register() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="apellido">Apellido</Label>
-                                        <Input
-                                            id="apellido"
-                                            name="apellido"
-                                            value={form.apellido}
-                                            onChange={handleChange}
-                                            placeholder="Ej. Pérez"
-                                            required
-                                            className="h-11 rounded-xl border-slate-200 bg-white"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
                                         <Label htmlFor="dni">DNI</Label>
                                         <Input
                                             id="dni"
@@ -226,22 +215,6 @@ export default function Register() {
                                             required
                                             className="h-11 rounded-xl border-slate-200 bg-white"
                                         />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="fechaNacimiento">Fecha de nacimiento</Label>
-                                        <div className="relative">
-                                            <CalendarDays className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                                            <Input
-                                                id="fechaNacimiento"
-                                                name="fechaNacimiento"
-                                                type="date"
-                                                value={form.fechaNacimiento}
-                                                onChange={handleChange}
-                                                required
-                                                className="h-11 rounded-xl border-slate-200 bg-white pl-10"
-                                            />
-                                        </div>
                                     </div>
 
                                     <div className="space-y-2">
@@ -289,19 +262,6 @@ export default function Register() {
                                             name="barrioId"
                                             value={form.barrioId}
                                             readOnly
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2 md:col-span-2">
-                                        <Label htmlFor="username">Username</Label>
-                                        <Input
-                                            id="username"
-                                            name="username"
-                                            value={form.username}
-                                            onChange={handleChange}
-                                            placeholder="Ej. juanperez"
-                                            required
-                                            className="h-11 rounded-xl border-slate-200 bg-white"
                                         />
                                     </div>
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ChevronDown, Eye, HandHeart, Handshake, LoaderCircle, MapPin, MessageCircle, NotebookPen, Search, Share2, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, Eye, Globe2, Handshake, LoaderCircle, MapPin, MessageCircle, NotebookPen, Search, Share2, SlidersHorizontal, X } from "lucide-react";
 
 import api from "@/api/axios";
 import CitizenNavbar from "@/components/CitizenNavbar";
@@ -67,19 +67,24 @@ const formatDateTime = (value) => {
 
     return new Intl.DateTimeFormat("es-AR", {
         dateStyle: "medium",
-        timeStyle: "short",
     }).format(new Date(value));
 };
 
-const getPriorityConfig = (supportCount, topSupport) => {
-    if ((supportCount ?? 0) > 0 && supportCount === topSupport) {
+const getPriorityConfig = (supportCount, topSupport, topSupportByNeighborhood) => {
+    const normalizedSupportCount = supportCount ?? 0;
+    const normalizedNeighborhoodTopSupport = topSupportByNeighborhood ?? 0;
+
+    if (
+        normalizedSupportCount > 0 &&
+        (normalizedSupportCount === topSupport || normalizedSupportCount === normalizedNeighborhoodTopSupport)
+    ) {
         return {
             label: "Prioridad alta",
             className: "bg-rose-50 text-rose-700 ring-1 ring-rose-200",
         };
     }
 
-    if ((supportCount ?? 0) >= Math.max(1, Math.ceil((topSupport ?? 0) / 2))) {
+    if (normalizedSupportCount >= Math.max(1, Math.ceil((topSupport ?? 0) / 2))) {
         return {
             label: "Prioridad media",
             className: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
@@ -102,6 +107,17 @@ const getStatusLabel = (status) => noteStatusLabels[status] ?? status;
 
 const getStatusClassName = (status) =>
     noteStatusStyles[status] ?? "bg-slate-100 text-slate-700 ring-1 ring-slate-200";
+
+const sortNotesBySupport = (notes) =>
+    [...notes].sort((first, second) => {
+        const supportDifference = (second.cantidadApoyos ?? 0) - (first.cantidadApoyos ?? 0);
+
+        if (supportDifference !== 0) {
+            return supportDifference;
+        }
+
+        return new Date(second.createdAt || 0).getTime() - new Date(first.createdAt || 0).getTime();
+    });
 
 function FormattedNoteContent({ content }) {
     return (
@@ -213,6 +229,8 @@ function NoteList({
     topSupport,
     highlightedNoteId,
     canShareNote,
+    showCategory = true,
+    topSupportByNeighborhood = {},
 }) {
     const [openShareMenuId, setOpenShareMenuId] = useState(null);
 
@@ -234,67 +252,98 @@ function NoteList({
     }
 
     return notes.map((note) => {
-        const priority = getPriorityConfig(note.cantidadApoyos, topSupport);
+        const priority = getPriorityConfig(
+            note.cantidadApoyos,
+            topSupport,
+            topSupportByNeighborhood[note.barrioId]
+        );
 
         return (
             <article
                 key={note.id}
                 id={`note-${note.id}`}
-                className={`w-full rounded-3xl border bg-[#ffffff] p-4 transition shadow-[0_14px_32px_rgba(15,23,42,0.08)] sm:p-5 ${
+                className={`flex min-h-[34rem] w-full flex-col rounded-[2rem] border border-slate-200 bg-white px-6 py-6 transition shadow-[0_18px_36px_rgba(15,23,42,0.08)] sm:min-h-[38rem] sm:px-7 sm:py-7 ${
                     highlightedNoteId === note.id
                         ? "border-sky-300 shadow-[0_18px_40px_rgba(33,119,213,0.14)]"
-                        : "border-slate-200"
+                        : ""
                 }`}
             >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-lg font-semibold text-slate-900">{note.titulo}</h2>
+                <div className="space-y-3">
+                    {showCategory ? (
+                        <div className="flex flex-wrap items-center justify-start gap-2">
+                            <span
+                                className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${getCategoryClassName(note.categoria)}`}
+                            >
+                                {getCategoryLabel(note.categoria)}
+                            </span>
+                        </div>
+                    ) : null}
+                    <div className="text-center">
+                        <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">{note.titulo}</h2>
+                    </div>
+                    <div className="flex justify-center">
                         <span
-                            className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${getCategoryClassName(note.categoria)}`}
+                            className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${priority.className}`}
                         >
-                            {getCategoryLabel(note.categoria)}
-                        </span>
-                        <span
-                            className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${getStatusClassName(note.estado)}`}
-                        >
-                            {getStatusLabel(note.estado)}
-                        </span>
-                        <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${priority.className}`}>
                             {priority.label}
                         </span>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                        <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-600 ring-1 ring-slate-200">
-                            <HandHeart
-                                size={16}
-                                className={note.apoyadaPorMi ? "text-rose-500" : "text-slate-400"}
-                            />
-                            <span>
-                                {note.cantidadApoyos ?? 0} {(note.cantidadApoyos ?? 0) === 1 ? "apoyo" : "apoyos"}
-                            </span>
+                </div>
+                <div className="mt-4 space-y-4 px-4">
+                    <div className="flex flex-wrap items-end justify-between gap-3">
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                                Centro vecinal
+                            </p>
+                            <p className="mt-1 text-sm text-slate-600">{note.centroVecinalNombre}</p>
                         </div>
-                        <span className="text-xs font-medium uppercase tracking-[0.14em] text-slate-400">
-                            {formatDateTime(note.createdAt)}
-                        </span>
+                        <div className="text-left sm:text-right">
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                                Fecha
+                            </p>
+                            <p className="mt-1 text-sm text-slate-600">{formatDateTime(note.createdAt)}</p>
+                        </div>
+                    </div>
+                    <div className="space-y-3">
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                                Presidente
+                            </p>
+                            <p className="mt-1 text-sm text-slate-600">{note.autorNombre}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                                Barrio
+                            </p>
+                            <p className="mt-1 text-sm text-slate-600">{note.barrioNombre}</p>
+                        </div>
                     </div>
                 </div>
-                <p className="mt-2 text-sm text-slate-500">
-                    {note.centroVecinalNombre} · Barrio {note.barrioNombre}
-                </p>
-                <p className="mt-1 text-sm text-slate-500">Publicado por {note.autorNombre}</p>
-                <div className="mt-4">
+                <div className="mt-4 px-4">
                     <FormattedNoteContent content={note.contenido} />
                 </div>
                 <NoteContactBlock note={note} />
-                {note.motivoEstado ? (
-                    <div className="mt-4 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                <div className="mt-4 bg-transparent px-4 py-3">
+                    {note.motivoEstado ? (
+                        <>
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                                Respuesta del municipio
+                            </p>
+                            <p className="mt-2 text-sm leading-6 text-slate-600">{note.motivoEstado}</p>
+                        </>
+                    ) : null}
+                    <div className={note.motivoEstado ? "mt-4 border-t border-slate-100 pt-3" : ""}>
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                            Motivo del municipio
+                            Estado de la nota
                         </p>
-                        <p className="mt-2 text-sm leading-6 text-slate-600">{note.motivoEstado}</p>
+                        <span
+                            className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${getStatusClassName(note.estado)}`}
+                        >
+                            {getStatusLabel(note.estado)}
+                        </span>
                     </div>
-                ) : null}
-                <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3">
+                </div>
+                <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4">
                     <Button
                         type="button"
                         onClick={() => onSupport(note.id)}
@@ -314,11 +363,17 @@ function NoteList({
                             <>
                                 <Handshake size={16} />
                                 Ya apoyaste
+                                <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                                    {note.cantidadApoyos ?? 0}
+                                </span>
                             </>
                         ) : (
                             <>
                                 <Handshake size={16} />
                                 Apoyar nota
+                                <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-700">
+                                    {note.cantidadApoyos ?? 0}
+                                </span>
                             </>
                         )}
                     </Button>
@@ -681,7 +736,41 @@ export default function PresidentNotes() {
         [normalizedSearchTerm, otherNeighborhoodNotes]
     );
 
-    const topSupport = notes[0]?.cantidadApoyos ?? 0;
+    const filteredAllNotes = useMemo(
+        () => sortNotesBySupport([...filteredOwnNeighborhoodNotes, ...filteredOtherNeighborhoodNotes]),
+        [filteredOtherNeighborhoodNotes, filteredOwnNeighborhoodNotes]
+    );
+
+    const sortedOwnNeighborhoodNotes = useMemo(
+        () => sortNotesBySupport(filteredOwnNeighborhoodNotes),
+        [filteredOwnNeighborhoodNotes]
+    );
+
+    const sortedOtherNeighborhoodNotes = useMemo(
+        () => sortNotesBySupport(filteredOtherNeighborhoodNotes),
+        [filteredOtherNeighborhoodNotes]
+    );
+
+    const topSupport = Math.max(0, ...notes.map((note) => note.cantidadApoyos ?? 0));
+    const topSupportByNeighborhood = useMemo(() => {
+        const supportMap = {};
+
+        notes.forEach((note) => {
+            const neighborhoodId = note.barrioId;
+
+            if (neighborhoodId == null) {
+                return;
+            }
+
+            supportMap[neighborhoodId] = Math.max(
+                supportMap[neighborhoodId] ?? 0,
+                note.cantidadApoyos ?? 0
+            );
+        });
+
+        return supportMap;
+    }, [notes]);
+
     const successToastConfig =
         successToastType === "support"
             ? {
@@ -855,7 +944,7 @@ export default function PresidentNotes() {
                     </div>
                 ) : null}
 
-                <Card className="mx-auto w-full border-0 bg-transparent py-0 shadow-none ring-0 xl:w-[80%]">
+                <Card className="mx-auto w-full max-w-3xl border-0 bg-transparent py-0 shadow-none ring-0">
                    
                     <CardContent className="space-y-8 px-0 pb-6 sm:px-3 lg:px-6">
                         {auth.role === "ROLE_PRESIDENTE" && isCreatePanelOpen ? (
@@ -955,12 +1044,30 @@ export default function PresidentNotes() {
                             </div>
                         ) : null}
 
-                        {selectedScope !== "OTROS" ? (
+                        {selectedScope === "TODOS" ? (
                             <section className="space-y-4">
-                              
-
                                 <NoteList
-                                    notes={filteredOwnNeighborhoodNotes}
+                                    notes={filteredAllNotes}
+                                    loading={loadingNotes}
+                                    emptyMessage="No se encontraron notas con ese criterio."
+                                    onSupport={handleSupportNote}
+                                    onShareWhatsApp={handleShareNoteWhatsApp}
+                                    onShareFacebook={handleShareNoteFacebook}
+                                    supportingNoteId={supportingNoteId}
+                                    topSupport={topSupport}
+                                    topSupportByNeighborhood={topSupportByNeighborhood}
+                                    highlightedNoteId={highlightedNoteId}
+                                    onPreview={handleOpenNotePreview}
+                                    canShareNote={canShareNote}
+                                    showCategory={auth.role === "ROLE_PRESIDENTE"}
+                                />
+                            </section>
+                        ) : null}
+
+                        {selectedScope === "MIO" ? (
+                            <section className="space-y-4">
+                                <NoteList
+                                    notes={sortedOwnNeighborhoodNotes}
                                     loading={loadingNotes}
                                     emptyMessage="No se encontraron notas de tu barrio con ese criterio."
                                     onSupport={handleSupportNote}
@@ -968,21 +1075,19 @@ export default function PresidentNotes() {
                                     onShareFacebook={handleShareNoteFacebook}
                                     supportingNoteId={supportingNoteId}
                                     topSupport={topSupport}
+                                    topSupportByNeighborhood={topSupportByNeighborhood}
                                     highlightedNoteId={highlightedNoteId}
                                     onPreview={handleOpenNotePreview}
                                     canShareNote={canShareNote}
+                                    showCategory={auth.role === "ROLE_PRESIDENTE"}
                                 />
                             </section>
                         ) : null}
 
-                        {selectedScope === "TODOS" ? <div className="h-px bg-slate-200" /> : null}
-
-                        {selectedScope !== "MIO" ? (
+                        {selectedScope === "OTROS" ? (
                             <section className="space-y-4">
-                             
-
                                 <NoteList
-                                    notes={filteredOtherNeighborhoodNotes}
+                                    notes={sortedOtherNeighborhoodNotes}
                                     loading={loadingNotes}
                                     emptyMessage="No se encontraron notas de otros barrios con ese criterio."
                                     onSupport={handleSupportNote}
@@ -990,9 +1095,11 @@ export default function PresidentNotes() {
                                     onShareFacebook={handleShareNoteFacebook}
                                     supportingNoteId={supportingNoteId}
                                     topSupport={topSupport}
+                                    topSupportByNeighborhood={topSupportByNeighborhood}
                                     highlightedNoteId={highlightedNoteId}
                                     onPreview={handleOpenNotePreview}
                                     canShareNote={canShareNote}
+                                    showCategory={auth.role === "ROLE_PRESIDENTE"}
                                 />
                             </section>
                         ) : null}
