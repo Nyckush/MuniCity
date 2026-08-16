@@ -3,14 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { FilePenLine, LoaderCircle, Plus, Trophy, UserRound, Vote, X } from "lucide-react";
 
 import api from "@/api/axios";
-import MunicipioSidebar from "@/components/MunicipioSidebar";
-import Navbar from "@/components/Navbar";
+import MunicipioNavbar from "@/components/MunicipioNavbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { clearStoredAuth, getValidStoredAuth, saveStoredAuth } from "@/lib/auth";
-import { municipioSidebarItems } from "@/lib/municipioNavigation";
 
 const runtimeConfig =
     typeof window !== "undefined" && window.__APP_CONFIG__
@@ -447,7 +445,7 @@ export default function MunicipioElections() {
                 </div>
             ) : null}
 
-            <Navbar
+            <MunicipioNavbar
                 homeHref="/municipio/dashboard"
                 userLabel={auth.municipioNombre || auth.email}
                 onLogout={handleLogout}
@@ -456,9 +454,7 @@ export default function MunicipioElections() {
             />
 
             <div className="min-h-[calc(100vh-73px)] w-full">
-                <MunicipioSidebar sidebarItems={municipioSidebarItems} />
-
-                <section className="min-w-0 overflow-x-auto px-4 py-5 sm:px-6 lg:ml-[290px] lg:px-10">
+                <section className="min-w-0 overflow-x-auto px-4 py-5 sm:px-6 lg:px-8">
                  
 
                     <div className="mt-6 space-y-6">

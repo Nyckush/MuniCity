@@ -3,11 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { BarChart3, FileText, Landmark, LayoutDashboard, UsersRound, Vote } from "lucide-react";
 
 import api from "@/api/axios";
-import MunicipioSidebar from "@/components/MunicipioSidebar";
-import Navbar from "@/components/Navbar";
+import MunicipioNavbar from "@/components/MunicipioNavbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { clearStoredAuth, getValidStoredAuth, saveStoredAuth } from "@/lib/auth";
-import { municipioSidebarItems } from "@/lib/municipioNavigation";
 
 const noteCategoryLabels = {
     PETICION: "Petición",
@@ -207,7 +205,7 @@ export default function MunicipioDashboard() {
 
     return (
         <main className="min-h-screen overflow-x-hidden bg-[linear-gradient(180deg,#edf6ff_0%,#f5fbff_38%,#fbfdff_100%)] pt-[73px]">
-            <Navbar
+            <MunicipioNavbar
                 homeHref="/municipio/dashboard"
                 userLabel={auth.municipioNombre || auth.email}
                 onLogout={handleLogout}
@@ -216,46 +214,60 @@ export default function MunicipioDashboard() {
             />
 
             <div className="min-h-[calc(100vh-73px)] w-full">
-                <MunicipioSidebar sidebarItems={municipioSidebarItems} />
-
-                <section className="min-w-0 overflow-x-auto px-4 py-5 sm:px-6 lg:ml-[290px] lg:px-10">
+                <section className="mx-auto min-w-0 w-full max-w-7xl overflow-x-auto px-4 py-5 sm:px-6 lg:px-8">
                
 
                     <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                         <Card className="border border-slate-200/80 bg-white/92 py-0 shadow-[0_18px_50px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
                             <CardContent className="px-6 py-6">
-                                <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 ring-1 ring-sky-100">
-                                    <UsersRound size={22} />
+                                <div className="flex items-start gap-4">
+                                    <div className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 ring-1 ring-sky-100">
+                                        <UsersRound size={22} />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Habitantes estimados</p>
+                                        <p className="mt-2 text-3xl font-semibold text-slate-600">{totalHabitants}</p>
+                                    </div>
                                 </div>
-                                <p className="mt-4 text-xs uppercase tracking-[0.16em] text-slate-500">Habitantes estimados</p>
-                                <p className="mt-3 text-3xl font-semibold text-slate-900">{totalHabitants}</p>
                             </CardContent>
                         </Card>
                         <Card className="border border-slate-200/80 bg-white/92 py-0 shadow-[0_18px_50px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
                             <CardContent className="px-6 py-6">
-                                <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-700 ring-1 ring-cyan-100">
-                                    <FileText size={22} />
+                                <div className="flex items-start gap-4">
+                                    <div className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-700 ring-1 ring-cyan-100">
+                                        <FileText size={22} />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Total notas</p>
+                                        <p className="mt-2 text-3xl font-semibold text-slate-600">{notes.length}</p>
+                                    </div>
                                 </div>
-                                <p className="mt-4 text-xs uppercase tracking-[0.16em] text-slate-500">Total notas</p>
-                                <p className="mt-3 text-3xl font-semibold text-slate-900">{notes.length}</p>
                             </CardContent>
                         </Card>
                         <Card className="border border-slate-200/80 bg-white/92 py-0 shadow-[0_18px_50px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
                             <CardContent className="px-6 py-6">
-                                <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100">
-                                    <Vote size={22} />
+                                <div className="flex items-start gap-4">
+                                    <div className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100">
+                                        <Vote size={22} />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Elecciones activas</p>
+                                        <p className="mt-2 text-3xl font-semibold text-slate-600">{electionStats.activas}</p>
+                                    </div>
                                 </div>
-                                <p className="mt-4 text-xs uppercase tracking-[0.16em] text-slate-500">Elecciones activas</p>
-                                <p className="mt-3 text-3xl font-semibold text-slate-900">{electionStats.activas}</p>
                             </CardContent>
                         </Card>
                         <Card className="border border-slate-200/80 bg-white/92 py-0 shadow-[0_18px_50px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
                             <CardContent className="px-6 py-6">
-                                <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
-                                    <Landmark size={22} />
+                                <div className="flex items-start gap-4">
+                                    <div className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
+                                        <Landmark size={22} />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Centros vecinales</p>
+                                        <p className="mt-2 text-3xl font-semibold text-slate-600">{centrosVecinales.length}</p>
+                                    </div>
                                 </div>
-                                <p className="mt-4 text-xs uppercase tracking-[0.16em] text-slate-500">Centros vecinales</p>
-                                <p className="mt-3 text-3xl font-semibold text-slate-900">{centrosVecinales.length}</p>
                             </CardContent>
                         </Card>
                     </div>
@@ -422,7 +434,59 @@ export default function MunicipioDashboard() {
                             </CardContent>
                         </Card>
 
-                        
+                        <Card className="border border-slate-200/80 bg-white/94 py-0 shadow-[0_24px_70px_rgba(15,62,106,0.10)] ring-1 ring-slate-200/70">
+                            <CardHeader className="px-8 pt-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-50 text-violet-700 ring-1 ring-violet-100">
+                                        <LayoutDashboard size={20} />
+                                    </div>
+                                    <div>
+                                        <CardTitle className="text-2xl font-semibold text-slate-900">
+                                            Barrios registrados
+                                        </CardTitle>
+                                        <CardDescription className="text-sm leading-6 text-slate-500">
+                                            Resumen general de todos los barrios cargados actualmente en el sistema.
+                                        </CardDescription>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="px-6 pb-6">
+                                <div className="rounded-3xl bg-slate-50/80 p-6 ring-1 ring-slate-200">
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div>
+                                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                                Total
+                                            </p>
+                                            <p className="mt-3 text-4xl font-semibold text-slate-900">
+                                                {barrios.length}
+                                            </p>
+                                            <p className="mt-2 text-sm text-slate-500">
+                                                barrios registrados
+                                            </p>
+                                        </div>
+                                        <div className="inline-flex h-20 w-20 items-center justify-center rounded-[1.75rem] bg-white text-violet-700 ring-1 ring-slate-200 shadow-sm">
+                                            <LayoutDashboard size={34} />
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-6 space-y-3">
+                                        {neighborhoodsByPopulation.slice(0, 6).map((barrio) => (
+                                            <div
+                                                key={barrio.id}
+                                                className="flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 ring-1 ring-slate-200"
+                                            >
+                                                <p className="text-sm font-semibold text-slate-900">
+                                                    {barrio.nombre}
+                                                </p>
+                                                <p className="text-xs uppercase tracking-[0.14em] text-slate-500">
+                                                    {barrio.habitantesEstimados} hab.
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </section>
                 </section>
             </div>

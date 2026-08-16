@@ -527,7 +527,7 @@ export default function PresidentNotes() {
             setNoteSuccess("La nota se publicó correctamente.");
             setSuccessToastType("publish");
             setShowSuccessToast(true);
-            setIsSuccessToastVisible(true);
+            setIsSuccessToastVisible(false);
         } catch (error) {
             setNoteError(
                 typeof error?.response?.data === "string"
@@ -544,6 +544,10 @@ export default function PresidentNotes() {
             return undefined;
         }
 
+        const animationFrameId = window.requestAnimationFrame(() => {
+            setIsSuccessToastVisible(true);
+        });
+
         const hideTimeoutId = window.setTimeout(() => {
             setIsSuccessToastVisible(false);
         }, 2800);
@@ -553,6 +557,7 @@ export default function PresidentNotes() {
         }, 3300);
 
         return () => {
+            window.cancelAnimationFrame(animationFrameId);
             window.clearTimeout(hideTimeoutId);
             window.clearTimeout(removeTimeoutId);
         };
@@ -592,7 +597,7 @@ export default function PresidentNotes() {
             setNoteSuccess("Tu apoyo fue registrado correctamente.");
             setSuccessToastType("support");
             setShowSuccessToast(true);
-            setIsSuccessToastVisible(true);
+            setIsSuccessToastVisible(false);
         } catch (error) {
             setNoteError(
                 typeof error?.response?.data === "string"

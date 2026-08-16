@@ -208,7 +208,7 @@ export default function CitizenObservations() {
             setObservationForm(initialObservationForm);
             setLocationMessage("");
             setShowSuccessToast(true);
-            setIsSuccessToastVisible(true);
+            setIsSuccessToastVisible(false);
             setActivePanel("list");
         } catch (error) {
             setFormError(
@@ -226,6 +226,10 @@ export default function CitizenObservations() {
             return undefined;
         }
 
+        const animationFrameId = window.requestAnimationFrame(() => {
+            setIsSuccessToastVisible(true);
+        });
+
         const hideTimeoutId = window.setTimeout(() => {
             setIsSuccessToastVisible(false);
         }, 2800);
@@ -235,6 +239,7 @@ export default function CitizenObservations() {
         }, 3300);
 
         return () => {
+            window.cancelAnimationFrame(animationFrameId);
             window.clearTimeout(hideTimeoutId);
             window.clearTimeout(removeTimeoutId);
         };

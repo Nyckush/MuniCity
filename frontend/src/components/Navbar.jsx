@@ -72,7 +72,7 @@ export default function Navbar({
                 fixed ? "fixed left-0 right-0" : "sticky"
             }`}
         >
-            <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6 md:grid md:grid-cols-[auto_1fr_auto] md:items-center lg:px-8">
+            <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6 md:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center lg:px-8">
                 <div className="flex items-center gap-2 md:gap-3">
                     {mobileNavItems.length > 0 ? (
                         <button
@@ -98,7 +98,7 @@ export default function Navbar({
                 </div>
 
                 {navItems.length > 0 ? (
-                    <nav className="hidden flex-wrap items-center justify-center gap-2 md:flex">
+                    <nav className="hidden flex-wrap items-center justify-center gap-2 md:flex md:justify-self-center">
                         {navItems.map((item) => {
                             const Icon = item.icon;
 
@@ -133,7 +133,7 @@ export default function Navbar({
                     </nav>
                 ) : null}
 
-                <div className="ml-auto flex items-center justify-end gap-2 sm:gap-3 md:ml-0">
+                <div className="ml-auto flex items-center justify-end gap-2 sm:gap-3 md:ml-0 md:justify-self-end">
                     {notificationsEnabled ? (
                         <NavLink
                             to={notificationsHref}

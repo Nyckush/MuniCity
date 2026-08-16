@@ -13,14 +13,12 @@ import {
 } from "lucide-react";
 
 import api from "@/api/axios";
-import MunicipioSidebar from "@/components/MunicipioSidebar";
-import Navbar from "@/components/Navbar";
+import MunicipioNavbar from "@/components/MunicipioNavbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { clearStoredAuth, getValidStoredAuth, saveStoredAuth } from "@/lib/auth";
-import { municipioSidebarItems } from "@/lib/municipioNavigation";
 
 const initialForm = {
     titulo: "",
@@ -262,7 +260,7 @@ export default function MunicipioCommunications() {
 
     return (
         <main className="min-h-screen overflow-x-hidden bg-[linear-gradient(180deg,#edf6ff_0%,#f5fbff_38%,#fbfdff_100%)] pt-[73px]">
-            <Navbar
+            <MunicipioNavbar
                 homeHref="/municipio/dashboard"
                 userLabel={auth.municipioNombre || auth.email}
                 onLogout={handleLogout}
@@ -271,9 +269,7 @@ export default function MunicipioCommunications() {
             />
 
             <div className="min-h-[calc(100vh-73px)] w-full">
-                <MunicipioSidebar sidebarItems={municipioSidebarItems} />
-
-                <section className="min-w-0 overflow-x-auto px-4 py-5 sm:px-6 lg:ml-[290px] lg:px-10">
+                <section className="min-w-0 overflow-x-auto px-4 py-5 sm:px-6 lg:px-8">
                     {feedback.message ? (
                         <div
                             className={`mt-6 rounded-2xl px-4 py-3 text-sm ${

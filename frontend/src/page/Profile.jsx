@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { clearStoredAuth, getValidStoredAuth, saveStoredAuth } from "@/lib/auth";
 
 const initialForm = {
+    email: "",
+    username: "",
     nombreCompleto: "",
     apellido: "",
     dni: "",
@@ -77,6 +79,8 @@ export default function Profile() {
                 setAuth(mergedAuth);
                 setBarrios(barriosResponse.data ?? []);
                 setForm({
+                    email: mergedAuth.email ?? "",
+                    username: mergedAuth.username ?? "",
                     nombreCompleto: mergedAuth.nombreCompleto ?? "",
                     apellido: mergedAuth.apellido ?? "",
                     dni: mergedAuth.dni ?? "",
@@ -163,7 +167,9 @@ export default function Profile() {
         setSubmitting(true);
 
         try {
-            await api.put("/ciudadanos/perfil", {
+            const response = await api.put("/ciudadanos/perfil", {
+                email: form.email.trim(),
+                username: form.username.trim(),
                 nombreCompleto: form.nombreCompleto.trim(),
                 apellido: form.apellido.trim(),
                 dni: form.dni.trim(),
@@ -172,16 +178,20 @@ export default function Profile() {
                 fotoPerfil: form.fotoPerfil.trim() || null,
             });
 
-            const profileResponse = await api.get("/auth/me");
             const nextAuth = {
                 ...auth,
-                ...profileResponse.data,
-                token: auth.token,
-                expiresAt: auth.expiresAt,
+                ...response.data,
+                token: response.data.token ?? auth.token,
+                expiresAt: response.data.expiresAt ?? auth.expiresAt,
             };
 
             saveStoredAuth(nextAuth);
             setAuth(nextAuth);
+            setForm((current) => ({
+                ...current,
+                email: nextAuth.email ?? "",
+                username: nextAuth.username ?? "",
+            }));
             setBarrioQuery(nextAuth.barrioNombre ?? barrioQuery);
             setSuccess("Tus datos personales se actualizaron correctamente.");
         } catch (submitError) {
@@ -417,26 +427,31 @@ export default function Profile() {
                                     </div>
 
                                     <div className="space-y-2 md:col-span-2">
-                                        <label className="text-sm font-medium text-slate-700" htmlFor="emailBloqueado">
+                                        <label className="text-sm font-medium text-slate-700" htmlFor="email">
                                             Correo electrónico
                                         </label>
                                         <Input
-                                            id="emailBloqueado"
-                                            value={auth.email ?? ""}
-                                            className="h-11 rounded-xl border-slate-200 bg-slate-50 text-slate-500"
-                                            disabled
+                                            id="email"
+                                            name="email"
+                                            type="email"
+                                            value={form.email}
+                                            onChange={handleChange}
+                                            className="h-11 rounded-xl border-slate-200 bg-white"
+                                            required
                                         />
                                     </div>
 
                                     <div className="space-y-2 md:col-span-2">
-                                        <label className="text-sm font-medium text-slate-700" htmlFor="usernameBloqueado">
+                                        <label className="text-sm font-medium text-slate-700" htmlFor="username">
                                             Username
                                         </label>
                                         <Input
-                                            id="usernameBloqueado"
-                                            value={auth.username ?? ""}
-                                            className="h-11 rounded-xl border-slate-200 bg-slate-50 text-slate-500"
-                                            disabled
+                                            id="username"
+                                            name="username"
+                                            value={form.username}
+                                            onChange={handleChange}
+                                            className="h-11 rounded-xl border-slate-200 bg-white"
+                                            required
                                         />
                                     </div>
                                 </div>

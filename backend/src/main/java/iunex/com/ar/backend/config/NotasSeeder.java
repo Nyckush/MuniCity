@@ -25,10 +25,47 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @Component
 @Order(5)
 public class NotasSeeder implements CommandLineRunner {
+
+    private record NoteTemplate(
+            String tituloBase,
+            CategoriaNota categoria,
+            String introduccion,
+            String diagnostico,
+            String propuesta,
+            String cierre
+    ) {}
+
+    private static final List<NoteTemplate> NOTE_TEMPLATES = List.of(
+            new NoteTemplate(
+                    "Plan de mejoras urbanas en %s",
+                    CategoriaNota.PROPUESTA,
+                    "Desde el centro vecinal proponemos un plan integral de mejoras urbanas para el barrio %s, con el objetivo de ordenar intervenciones prioritarias y dar respuesta a reclamos que vienen siendo reiterados por vecinos y vecinas en reuniones comunitarias.",
+                    "Durante los ultimos meses se relevaron veredas con roturas, sectores con iluminacion insuficiente, cruces peatonales sin demarcacion visible y espacios de uso comun que necesitan reacondicionamiento para garantizar una circulacion mas segura.",
+                    "La propuesta contempla una primera etapa de reparacion de veredas, reposicion de luminarias, pintura de sendas peatonales y colocacion de cestos en puntos estrategicos. En una segunda etapa se sugiere sumar bancos, tareas de forestacion y mejoras en plazas o espacios barriales de encuentro.",
+                    "Solicitamos que esta nota sea considerada dentro de la planificacion municipal para definir un cronograma de trabajo conjunto con el centro vecinal, priorizando las cuadras mas transitadas y los sectores donde viven personas mayores, ninos y familias con mayores dificultades de movilidad."
+            ),
+            new NoteTemplate(
+                    "Agenda cultural y comunitaria de %s",
+                    CategoriaNota.COMUNICADO,
+                    "Compartimos una propuesta de agenda cultural y comunitaria para el barrio %s, pensada para fortalecer la participacion vecinal y recuperar espacios comunes con actividades abiertas, accesibles y sostenidas en el tiempo.",
+                    "En encuentros recientes surgio la necesidad de generar mas instancias de integracion entre familias, juventudes, personas mayores, emprendedores locales y organizaciones barriales, especialmente durante fines de semana y fechas conmemorativas.",
+                    "La iniciativa incluye talleres recreativos, ferias de emprendedores, cine o musica al aire libre, jornadas de lectura, actividades deportivas comunitarias y acciones articuladas con escuelas, clubes o instituciones cercanas para ampliar la convocatoria.",
+                    "Proponemos trabajar esta agenda junto al municipio para ordenar permisos, definir necesidades logisticas y construir un calendario semestral que le de continuidad, visibilidad y valor comunitario a las actividades desarrolladas en el barrio."
+            ),
+            new NoteTemplate(
+                    "Programa de seguridad y limpieza para %s",
+                    CategoriaNota.RECLAMO,
+                    "Presentamos esta nota para solicitar el refuerzo del programa de seguridad preventiva y limpieza urbana en el barrio %s, a partir de situaciones observadas por residentes y referentes comunitarios durante las ultimas semanas.",
+                    "Se detectaron microbasurales en esquinas recurrentes, acumulacion de restos verdes y residuos voluminosos, ademas de calles con baja visibilidad nocturna y sectores donde vecinos manifiestan preocupacion por hechos de vandalismo o circulacion insegura.",
+                    "Solicitamos incrementar la frecuencia de limpieza en puntos criticos, coordinar operativos especiales para retiro de residuos no convencionales, revisar luminarias fuera de servicio y reforzar recorridos preventivos en horarios de mayor circulacion peatonal.",
+                    "Consideramos importante complementar estas acciones con una instancia de seguimiento entre municipio y centro vecinal, de modo que los avances puedan verificarse en territorio y se mantenga una respuesta sostenida sobre los sectores mas sensibles del barrio."
+            )
+    );
 
     private final BarrioRepository barrioRepository;
     private final CentroVecinalRepository centroVecinalRepository;
@@ -59,8 +96,7 @@ public class NotasSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        List<Barrio> barrios = barrioRepository.findAll()
-                .stream()
+        List<Barrio> barrios = barrioRepository.findAll().stream()
                 .sorted(Comparator.comparing(Barrio::getNombre))
                 .toList();
 
@@ -89,7 +125,11 @@ public class NotasSeeder implements CommandLineRunner {
         }
 
         List<Ciudadano> ciudadanosSinDuplicados = ciudadanosGlobales.stream()
-                .collect(java.util.stream.Collectors.toMap(Ciudadano::getId, ciudadano -> ciudadano, (first, second) -> first))
+                .collect(java.util.stream.Collectors.toMap(
+                        Ciudadano::getId,
+                        ciudadano -> ciudadano,
+                        (first, second) -> first
+                ))
                 .values()
                 .stream()
                 .sorted(Comparator.comparing(Ciudadano::getId))
@@ -151,38 +191,21 @@ public class NotasSeeder implements CommandLineRunner {
     private List<Nota> ensureNotesForNeighborhood(Barrio barrio, CentroVecinal centroVecinal, int barrioIndex) {
         List<Nota> notas = new ArrayList<>();
 
-        Object[][] templates = {
-                {
-                        "Plan de mejoras urbanas en " + barrio.getNombre(),
-                        "Se propone priorizar veredas, luminarias y puntos de encuentro para fortalecer la vida cotidiana del barrio.",
-                        CategoriaNota.PROPUESTA
-                },
-                {
-                        "Agenda cultural y comunitaria de " + barrio.getNombre(),
-                        "La propuesta incluye talleres abiertos, ferias vecinales y actividades intergeneracionales para activar la participación.",
-                        CategoriaNota.COMUNICADO
-                },
-                {
-                        "Programa de seguridad y limpieza para " + barrio.getNombre(),
-                        "La nota plantea reforzar recorridos preventivos, limpieza de espacios comunes y un canal de seguimiento barrial.",
-                        CategoriaNota.RECLAMO
-                }
-        };
+        Map<String, Nota> existingNotesByTitle = notaRepository.findAll().stream()
+                .filter(nota -> nota.getCentroVecinal().getId().equals(centroVecinal.getId()))
+                .collect(java.util.stream.Collectors.toMap(
+                        Nota::getTitulo,
+                        nota -> nota,
+                        (first, second) -> first
+                ));
 
-        for (int index = 0; index < templates.length; index++) {
-            String titulo = (String) templates[index][0];
-            String contenido = (String) templates[index][1];
-            CategoriaNota categoria = (CategoriaNota) templates[index][2];
+        for (int index = 0; index < NOTE_TEMPLATES.size(); index++) {
+            NoteTemplate template = NOTE_TEMPLATES.get(index);
+            String titulo = template.tituloBase().formatted(barrio.getNombre());
 
-            if (notaRepository.existsByCentroVecinalIdAndTitulo(centroVecinal.getId(), titulo)) {
-                Nota existente = notaRepository.findAll().stream()
-                        .filter(nota -> nota.getCentroVecinal().getId().equals(centroVecinal.getId()) && titulo.equals(nota.getTitulo()))
-                        .findFirst()
-                        .orElse(null);
-
-                if (existente != null) {
-                    notas.add(existente);
-                }
+            Nota existente = existingNotesByTitle.get(titulo);
+            if (existente != null) {
+                notas.add(existente);
                 continue;
             }
 
@@ -190,14 +213,36 @@ public class NotasSeeder implements CommandLineRunner {
             nota.setCentroVecinal(centroVecinal);
             nota.setAutor(centroVecinal.getPresidente());
             nota.setTitulo(titulo);
-            nota.setContenido(contenido + " Prioridad temática #" + (barrioIndex + index + 1) + ".");
-            nota.setCategoria(categoria);
+            nota.setContenido(buildNoteContent(barrio, template, barrioIndex, index));
+            nota.setCategoria(template.categoria());
             nota.setEstado(EstadoNota.ENTREGADO);
             nota.setMotivoEstado(null);
+            nota.setMostrarUbicacion(true);
+            nota.setMostrarWhatsApp(true);
+            nota.setMostrarFacebook(true);
             notas.add(notaRepository.save(nota));
         }
 
         return notas;
+    }
+
+    private String buildNoteContent(Barrio barrio, NoteTemplate template, int barrioIndex, int templateIndex) {
+        int prioridad = barrioIndex + templateIndex + 1;
+
+        return """
+                <p>%s</p>
+                <p>%s</p>
+                <p>%s</p>
+                <p>%s</p>
+                <p><strong>Prioridad barrial:</strong> eje de trabajo %d para %s.</p>
+                """.formatted(
+                template.introduccion().formatted(barrio.getNombre()),
+                template.diagnostico(),
+                template.propuesta(),
+                template.cierre(),
+                prioridad,
+                barrio.getNombre()
+        );
     }
 
     private String slugify(String value) {

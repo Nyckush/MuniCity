@@ -59,12 +59,7 @@ public class AuthService {
 
         migrateLegacyPasswordIfNeeded(user, dto.getPassword());
 
-        String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getRole());
-        Instant expiration = jwtService.extractExpiration(token);
-
-        AuthResponseDTO response = buildAuthResponse(user);
-        response.setToken(token);
-        response.setExpiresAt(expiration.toEpochMilli());
+        AuthResponseDTO response = issueSessionForUser(user);
         response.setMessage("Inicio de sesión exitoso.");
 
         return response;
@@ -167,5 +162,15 @@ public class AuthService {
         }
 
         throw new RuntimeException("El rol del usuario no está soportado por el sistema.");
+    }
+
+    public AuthResponseDTO issueSessionForUser(User user) {
+        String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getRole());
+        Instant expiration = jwtService.extractExpiration(token);
+
+        AuthResponseDTO response = buildAuthResponse(user);
+        response.setToken(token);
+        response.setExpiresAt(expiration.toEpochMilli());
+        return response;
     }
 }

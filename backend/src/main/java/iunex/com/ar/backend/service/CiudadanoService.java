@@ -1,6 +1,7 @@
 package iunex.com.ar.backend.service;
 
 import iunex.com.ar.backend.dto.ActualizarPerfilCiudadanoDTO;
+import iunex.com.ar.backend.dto.AuthResponseDTO;
 import iunex.com.ar.backend.dto.RegistroCiudadanoDTO;
 import iunex.com.ar.backend.model.Barrio;
 import iunex.com.ar.backend.model.Ciudadano;
@@ -28,6 +29,9 @@ public class CiudadanoService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private AuthService authService;
 
     @Transactional
     public void registrarCiudadano(RegistroCiudadanoDTO dto) {
@@ -86,7 +90,7 @@ public class CiudadanoService {
     }
 
     @Transactional
-    public void actualizarPerfil(Authentication authentication, ActualizarPerfilCiudadanoDTO dto) {
+    public AuthResponseDTO actualizarPerfil(Authentication authentication, ActualizarPerfilCiudadanoDTO dto) {
         if (authentication == null || authentication.getName() == null) {
             throw new RuntimeException("No hay una sesión autenticada.");
         }
@@ -97,11 +101,33 @@ public class CiudadanoService {
         Ciudadano ciudadano = ciudadanoRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("No se encontró un perfil ciudadano asociado."));
 
+        String emailNormalizado = dto.getEmail() == null ? "" : dto.getEmail().trim().toLowerCase();
+        String usernameNormalizado = dto.getUsername() == null ? "" : dto.getUsername().trim();
         String dniNormalizado = dto.getDni() == null ? "" : dto.getDni().trim();
+
+        if (emailNormalizado.isBlank()) {
+            throw new RuntimeException("El correo electrónico es obligatorio.");
+        }
+
+        if (usernameNormalizado.isBlank()) {
+            throw new RuntimeException("El username es obligatorio.");
+        }
 
         if (dniNormalizado.isBlank()) {
             throw new RuntimeException("El DNI es obligatorio.");
         }
+
+        userRepository.findByEmailIgnoreCase(emailNormalizado)
+                .filter(existing -> !existing.getId().equals(user.getId()))
+                .ifPresent(existing -> {
+                    throw new RuntimeException("El correo electrónico ya está registrado.");
+                });
+
+        userRepository.findByUsernameIgnoreCase(usernameNormalizado)
+                .filter(existing -> !existing.getId().equals(user.getId()))
+                .ifPresent(existing -> {
+                    throw new RuntimeException("El username ya está registrado.");
+                });
 
         ciudadanoRepository.findByDni(dniNormalizado)
                 .filter(existing -> !existing.getId().equals(ciudadano.getId()))
@@ -117,10 +143,13 @@ public class CiudadanoService {
         ciudadano.setDni(dniNormalizado);
         ciudadano.setFechaNacimiento(dto.getFechaNacimiento());
         ciudadano.setBarrio(barrio);
+        user.setEmail(emailNormalizado);
+        user.setUsername(usernameNormalizado);
         user.setFotoPerfil(normalizeOptionalValue(dto.getFotoPerfil()));
 
-        userRepository.save(user);
+        User updatedUser = userRepository.save(user);
         ciudadanoRepository.save(ciudadano);
+        return authService.issueSessionForUser(updatedUser);
     }
 
     private String normalizeOptionalValue(String value) {

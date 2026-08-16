@@ -1,6 +1,7 @@
 package iunex.com.ar.backend.controller;
 
 import iunex.com.ar.backend.dto.ActualizarPerfilCiudadanoDTO;
+import iunex.com.ar.backend.dto.AuthResponseDTO;
 import iunex.com.ar.backend.dto.RegistroCiudadanoDTO;
 import iunex.com.ar.backend.service.CiudadanoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,10 +36,11 @@ public class CiudadanoController {
     }
 
     @PutMapping("/perfil")
-    public ResponseEntity<String> actualizarPerfil(@RequestBody ActualizarPerfilCiudadanoDTO dto, Authentication authentication) {
+    public ResponseEntity<?> actualizarPerfil(@RequestBody ActualizarPerfilCiudadanoDTO dto, Authentication authentication) {
         try {
-            ciudadanoService.actualizarPerfil(authentication, dto);
-            return new ResponseEntity<>("Perfil actualizado con éxito.", HttpStatus.OK);
+            AuthResponseDTO response = ciudadanoService.actualizarPerfil(authentication, dto);
+            response.setMessage("Perfil actualizado con éxito.");
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }

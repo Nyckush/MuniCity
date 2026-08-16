@@ -4,13 +4,11 @@ import { Bell, CheckCheck, ExternalLink, LoaderCircle } from "lucide-react";
 
 import api from "@/api/axios";
 import CitizenNavbar from "@/components/CitizenNavbar";
-import MunicipioSidebar from "@/components/MunicipioSidebar";
 import PresidentNavbar from "@/components/PresidentNavbar";
-import Navbar from "@/components/Navbar";
+import MunicipioNavbar from "@/components/MunicipioNavbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { clearStoredAuth, getValidStoredAuth, saveStoredAuth } from "@/lib/auth";
-import { municipioSidebarItems } from "@/lib/municipioNavigation";
 
 const notificationTypeConfig = {
     NOTA_NUEVA: {
@@ -189,7 +187,7 @@ export default function Notifications() {
     if (auth.role === "ROLE_MUNICIPIO") {
         return (
             <main className="min-h-screen overflow-x-hidden bg-[linear-gradient(180deg,#edf6ff_0%,#f5fbff_38%,#fbfdff_100%)] pt-[73px]">
-                <Navbar
+                <MunicipioNavbar
                     homeHref="/municipio/dashboard"
                     userLabel={auth.municipioNombre || auth.email}
                     onLogout={handleLogout}
@@ -198,9 +196,7 @@ export default function Notifications() {
                 />
 
                 <div className="min-h-[calc(100vh-73px)] w-full">
-                    <MunicipioSidebar sidebarItems={municipioSidebarItems} />
-
-                    <section className="min-w-0 overflow-x-auto px-4 py-5 sm:px-6 lg:ml-[290px] lg:px-10">
+                    <section className="min-w-0 overflow-x-auto px-4 py-5 sm:px-6 lg:px-8">
                         <div className="flex w-full flex-col gap-6">
                             <div className="flex flex-wrap items-center justify-between gap-4">
                                 <div>
