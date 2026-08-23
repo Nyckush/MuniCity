@@ -262,7 +262,7 @@ a {
     justify-content: center;
     width: 2.8rem;
     height: 2.8rem;
-    border: 1px solid rgba(24, 50, 79, 0.12);
+    border: 0;
     border-radius: 18px;
     background: #ffffff;
     color: #18324f;
@@ -330,6 +330,7 @@ a {
     border: 0;
     background: rgba(15, 23, 42, 0.42);
     backdrop-filter: blur(3px);
+    animation: mobileMenuOverlayFade 220ms ease-out;
 }
 
 .public-mobile-menu__panel {
@@ -345,6 +346,30 @@ a {
     border-bottom: 1px solid #888888;
     border-radius: 0 0 12px 0;
     box-shadow: 0 28px 60px rgba(15, 23, 42, 0.24);
+    animation: mobileMenuSlideIn 280ms cubic-bezier(0.22, 1, 0.36, 1);
+    transform-origin: left top;
+}
+
+@keyframes mobileMenuOverlayFade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes mobileMenuSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .public-mobile-menu__header {
@@ -513,6 +538,10 @@ a {
     flex-wrap: wrap;
     gap: 1rem;
     margin-top: 2rem;
+}
+
+.hero-actions--mobile {
+    display: none;
 }
 
 .cta-primary {
@@ -964,7 +993,8 @@ a {
 
     .hero-copy h1 {
         max-width: none;
-        font-size: clamp(2.4rem, 12vw, 3.5rem);
+        font-size: clamp(1.9rem, 8.6vw, 2.7rem);
+        line-height: 1.08;
     }
 
     .hero-copy p {
@@ -975,13 +1005,22 @@ a {
         flex-direction: column;
     }
 
+    .hero-actions--desktop {
+        display: none;
+    }
+
+    .hero-actions--mobile {
+        display: flex;
+        margin-top: 1rem;
+    }
+
     .cta-primary,
     .cta-secondary {
         width: 100%;
     }
 
     .hero-visual {
-        min-height: 360px;
+        min-height: 300px;
     }
 
     .hero-band {
@@ -991,11 +1030,11 @@ a {
     }
 
     .hero-visual__frame {
-        padding-top: 0.25rem;
+        padding-top: 0;
     }
 
     .hero-visual__frame::before {
-        inset: 10% 0 8%;
+        inset: 6% 0 4%;
         border-radius: 30px;
     }
 
@@ -1041,6 +1080,12 @@ a {
 
     .public-footer {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .public-footer__links {
+        justify-content: center;
     }
 }

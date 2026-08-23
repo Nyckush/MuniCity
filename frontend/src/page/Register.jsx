@@ -147,14 +147,14 @@ export default function Register() {
     };
 
     return (
-        <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_left_center,rgba(119,181,246,0.18),transparent_20%),radial-gradient(circle_at_right_top,rgba(42,197,201,0.18),transparent_24%),linear-gradient(180deg,#f2fbff_0%,#edf8ff_45%,#f8fcff_100%)] px-2 py-8 sm:px-6 lg:px-8">
+        <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_left_center,rgba(119,181,246,0.18),transparent_20%),radial-gradient(circle_at_right_top,rgba(42,197,201,0.18),transparent_24%),linear-gradient(180deg,#f2fbff_0%,#edf8ff_45%,#f8fcff_100%)] px-2 pb-4 pt-2 sm:px-6 sm:pb-8 sm:pt-8 lg:px-8">
             <div
                 aria-hidden="true"
-                className="absolute left-[-4rem] top-[-2.5rem] h-44 w-72 rotate-[-8deg] rounded-b-[10rem] rounded-t-none bg-[linear-gradient(135deg,rgba(41,116,214,0.9),rgba(35,209,195,0.84))] opacity-95"
+                className="absolute left-[-11rem] top-[-8.5rem] h-44 w-72 rotate-[-8deg] rounded-b-[10rem] rounded-t-none bg-[linear-gradient(135deg,rgba(41,116,214,0.9),rgba(35,209,195,0.84))] opacity-95 sm:left-[-4rem] sm:top-[-2.5rem]"
             />
             <div
                 aria-hidden="true"
-                className="absolute right-[-4rem] top-[-2.5rem] h-44 w-72 rotate-[8deg] rounded-b-[10rem] rounded-t-none bg-[linear-gradient(135deg,rgba(34,122,219,0.86),rgba(25,203,198,0.82))] opacity-95"
+                className="absolute right-[-11rem] top-[-8.5rem] h-44 w-72 rotate-[8deg] rounded-b-[10rem] rounded-t-none bg-[linear-gradient(135deg,rgba(34,122,219,0.86),rgba(25,203,198,0.82))] opacity-95 sm:right-[-4rem] sm:top-[-2.5rem]"
             />
 
             <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-6">
@@ -343,10 +343,10 @@ export default function Register() {
                                         )}
                                     </Button>
 
-                                         <Link
-                        to="/"
-                        className="inline-flex items-center gap-2   px-4 py-2 text-sm font-medium text-slate-700   "
-                    >
+                                    <Link
+                                        to="/"
+                                        className="inline-flex items-center justify-center gap-2 px-4 py-2 text-center text-sm font-medium text-slate-700"
+                                    >
                         <ChevronLeft size={16} />
                         Volver al inicio
                     </Link>

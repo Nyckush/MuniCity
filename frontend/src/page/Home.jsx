@@ -162,7 +162,7 @@ export default function Home() {
                             coordinen propuestas, seguimiento y observaciones en un solo lugar.
                         </p>
 
-                        <div className="hero-actions">
+                        <div className="hero-actions hero-actions--desktop">
                             <Link className="cta-primary" to="/register">
                                 Registrate ahora
                                 <ArrowRight size={18} />
@@ -178,6 +178,13 @@ export default function Home() {
                                 alt=""
                             />
                         </div>
+                    </div>
+
+                    <div className="hero-actions hero-actions--mobile">
+                        <Link className="cta-primary" to="/register">
+                            Registrate ahora
+                            <ArrowRight size={18} />
+                        </Link>
                     </div>
                 </div>
             </section>
@@ -223,7 +230,7 @@ export default function Home() {
                     <a href="#preguntas">Preguntas</a>
                 </div>
 
-                <p>© Copyright Municity</p>
+                <p>© iunex /Municity</p>
             </footer>
         </main>
     );
