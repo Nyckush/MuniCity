@@ -54,16 +54,71 @@ const faqs = [
     },
 ];
 
+const MOBILE_MENU_CLOSE_DURATION_MS = 240;
+
 export default function Home() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isMobileMenuVisible, setIsMobileMenuVisible] = useState(false);
 
     useEffect(() => {
-        document.body.style.overflow = isMobileMenuOpen ? "hidden" : "";
+        if (!isMobileMenuVisible) {
+            const scrollY = Math.abs(parseInt(document.body.style.top || "0", 10)) || 0;
+
+            document.body.style.overflow = "";
+            document.body.style.position = "";
+            document.body.style.top = "";
+            document.body.style.left = "";
+            document.body.style.right = "";
+            document.body.style.width = "";
+
+            if (scrollY > 0) {
+                window.scrollTo(0, scrollY);
+            }
+        } else {
+            const scrollY = window.scrollY;
+
+            document.body.style.overflow = "hidden";
+            document.body.style.position = "fixed";
+            document.body.style.top = `-${scrollY}px`;
+            document.body.style.left = "0";
+            document.body.style.right = "0";
+            document.body.style.width = "100%";
+        }
 
         return () => {
             document.body.style.overflow = "";
+            document.body.style.position = "";
+            document.body.style.top = "";
+            document.body.style.left = "";
+            document.body.style.right = "";
+            document.body.style.width = "";
         };
-    }, [isMobileMenuOpen]);
+    }, [isMobileMenuVisible]);
+
+    useEffect(() => {
+        let closeTimer;
+
+        if (isMobileMenuOpen) {
+            setIsMobileMenuVisible(true);
+        } else if (isMobileMenuVisible) {
+            closeTimer = window.setTimeout(() => {
+                setIsMobileMenuVisible(false);
+            }, MOBILE_MENU_CLOSE_DURATION_MS);
+        }
+
+        return () => {
+            window.clearTimeout(closeTimer);
+        };
+    }, [isMobileMenuOpen, isMobileMenuVisible]);
+
+    const openMobileMenu = () => {
+        setIsMobileMenuVisible(true);
+        setIsMobileMenuOpen(true);
+    };
+
+    const closeMobileMenu = () => {
+        setIsMobileMenuOpen(false);
+    };
 
     return (
         <main className="home-page">
@@ -77,7 +132,7 @@ export default function Home() {
                     <div className="public-header__mobile-row">
                         <button
                             type="button"
-                            onClick={() => setIsMobileMenuOpen(true)}
+                            onClick={openMobileMenu}
                             className="public-header__menu-button"
                             aria-label="Abrir menú"
                         >
@@ -107,12 +162,12 @@ export default function Home() {
                 </div>
             </header>
 
-            {isMobileMenuOpen ? (
-                <div className="public-mobile-menu">
+            {isMobileMenuVisible ? (
+                <div className={`public-mobile-menu${isMobileMenuOpen ? " is-open" : " is-closing"}`}>
                     <button
                         type="button"
                         className="public-mobile-menu__overlay"
-                        onClick={() => setIsMobileMenuOpen(false)}
+                        onClick={closeMobileMenu}
                         aria-label="Cerrar menú"
                     />
 
@@ -121,7 +176,7 @@ export default function Home() {
                             <p>Menu</p>
                             <button
                                 type="button"
-                                onClick={() => setIsMobileMenuOpen(false)}
+                                onClick={closeMobileMenu}
                                 className="public-mobile-menu__close"
                                 aria-label="Cerrar menú"
                             >
@@ -134,7 +189,7 @@ export default function Home() {
                                 <a
                                     key={item.label}
                                     href={item.href}
-                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    onClick={closeMobileMenu}
                                 >
                                     {item.label}
                                 </a>
@@ -142,10 +197,10 @@ export default function Home() {
                         </nav>
 
                         <div className="public-mobile-menu__actions">
-                            <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                            <Link to="/login" onClick={closeMobileMenu}>
                                 Iniciar sesión
                             </Link>
-                            <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                            <Link to="/register" onClick={closeMobileMenu}>
                                 Registrate
                             </Link>
                         </div>
@@ -190,6 +245,7 @@ export default function Home() {
             </section>
 
             <section className="feature-grid-section" id="caracteristicas">
+                <h2 className="feature-grid-section__mobile-title">Participá con tu comunidad</h2>
                 <div className="feature-grid">
                     {primaryFeatures.map(({ image, title, description }) => (
                         <article key={title} className="feature-card">
