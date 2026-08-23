@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ChevronDown, Eye, Globe2, Handshake, LoaderCircle, MapPin, MessageCircle, NotebookPen, Search, Share2, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, Download, ExternalLink, Eye, Globe2, Handshake, LoaderCircle, MapPin, MessageCircle, NotebookPen, Search, Share2, SlidersHorizontal, X } from "lucide-react";
 
 import api from "@/api/axios";
 import CitizenNavbar from "@/components/CitizenNavbar";
@@ -681,6 +681,30 @@ export default function PresidentNotes() {
         setPreviewLoading(false);
     };
 
+    const handleOpenPreviewPdf = () => {
+        if (!previewPdfUrl) {
+            return;
+        }
+
+        window.open(previewPdfUrl, "_blank", "noopener,noreferrer");
+    };
+
+    const handleDownloadPreviewPdf = () => {
+        if (!previewPdfUrl || !previewNote) {
+            return;
+        }
+
+        const anchor = document.createElement("a");
+        const fileName = `${previewNote.titulo || "nota"}`
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/gi, "-")
+            .replace(/^-+|-+$/g, "");
+
+        anchor.href = previewPdfUrl;
+        anchor.download = `${fileName || "nota"}-${previewNote.id}.pdf`;
+        anchor.click();
+    };
+
     const ownNeighborhoodNotes = useMemo(
         () => notes.filter((note) => note.barrioId === auth?.barrioId),
         [auth?.barrioId, notes]
@@ -841,7 +865,7 @@ export default function PresidentNotes() {
             {(previewLoading || previewNote || previewError) ? (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-[2px]">
                     <div className="flex h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_30px_80px_rgba(15,23,42,0.28)]">
-                        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+                        <div className="flex flex-col gap-3 border-b border-slate-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                             <div className="min-w-0">
                                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
                                     Vista de nota
@@ -850,14 +874,41 @@ export default function PresidentNotes() {
                                     {previewNote?.titulo || "Cargando nota"}
                                 </h2>
                             </div>
-                            <Button
-                                type="button"
-                                onClick={handleClosePreview}
-                                className="h-11 bg-transparent px-4 text-slate-600 hover:bg-slate-100"
-                            >
-                                <X size={18} />
-                                Cerrar
-                            </Button>
+                            <div className="flex flex-col gap-2 sm:flex-row">
+                                {!previewLoading && !previewError && previewPdfUrl ? (
+                                    <>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={handleOpenPreviewPdf}
+                                            className="h-11 rounded-xl border-slate-200 px-4"
+                                        >
+                                            <ExternalLink size={16} />
+                                            Abrir PDF
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            onClick={handleDownloadPreviewPdf}
+                                            className="h-11 rounded-xl bg-[linear-gradient(135deg,#2177d5,#2db6d5)] px-4 text-white hover:opacity-95"
+                                        >
+                                            <Download size={16} />
+                                            Descargar PDF
+                                        </Button>
+                                    </>
+                                ) : null}
+                                <Button
+                                    type="button"
+                                    onClick={handleClosePreview}
+                                    className="h-11 bg-transparent px-4 text-slate-600 hover:bg-slate-100"
+                                >
+                                    <X size={18} />
+                                    Cerrar
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div className="border-b border-slate-100 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600 sm:px-6">
+                            Si en tu celular no se visualiza dentro de la página, usá "Abrir PDF" o "Descargar PDF".
                         </div>
 
                         <div className="flex-1 bg-slate-100">
@@ -878,11 +929,43 @@ export default function PresidentNotes() {
                                     </div>
                                 </div>
                             ) : previewPdfUrl ? (
-                                <iframe
-                                    src={previewPdfUrl}
-                                    title={`Nota ${previewNote?.id}`}
+                                <object
+                                    data={previewPdfUrl}
+                                    type="application/pdf"
                                     className="h-full w-full bg-white"
-                                />
+                                    aria-label={`Nota ${previewNote?.id}`}
+                                >
+                                    <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
+                                        <Eye className="text-slate-400" size={38} />
+                                        <div className="max-w-md">
+                                            <p className="text-base font-semibold text-slate-700">
+                                                No se pudo mostrar el PDF dentro del navegador.
+                                            </p>
+                                            <p className="mt-2 text-sm leading-6 text-slate-500">
+                                                En algunos celulares el visor interno no es compatible.
+                                            </p>
+                                        </div>
+                                        <div className="flex w-full max-w-sm flex-col gap-3 sm:flex-row">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={handleOpenPreviewPdf}
+                                                className="h-11 flex-1 rounded-xl border-slate-200 px-4"
+                                            >
+                                                <ExternalLink size={16} />
+                                                Abrir PDF
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                onClick={handleDownloadPreviewPdf}
+                                                className="h-11 flex-1 rounded-xl bg-[linear-gradient(135deg,#2177d5,#2db6d5)] px-4 text-white hover:opacity-95"
+                                            >
+                                                <Download size={16} />
+                                                Descargar PDF
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </object>
                             ) : null}
                         </div>
                     </div>
