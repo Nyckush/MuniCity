@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Download, FileText, LoaderCircle } from "lucide-react";
+import { Download, ExternalLink, FileText, LoaderCircle } from "lucide-react";
 
 import api from "@/api/axios";
 import { Button } from "@/components/ui/button";
@@ -77,6 +77,14 @@ export default function NotePdfViewer() {
         anchor.click();
     };
 
+    const handleOpenPdf = () => {
+        if (!pdfUrl) {
+            return;
+        }
+
+        window.open(pdfUrl, "_blank", "noopener,noreferrer");
+    };
+
     if (loading) {
         return (
             <main className="flex min-h-screen items-center justify-center bg-[#E6E9F3] px-6">
@@ -100,15 +108,85 @@ export default function NotePdfViewer() {
     }
 
     return (
-        <main className="min-h-screen w-full bg-[#E6E9F3] p-0">
-            <section className="h-screen w-full overflow-hidden border-0 bg-white shadow-[0_24px_70px_rgba(15,62,106,0.10)]">
-                {pdfUrl ? (
-                    <iframe
-                        src={pdfUrl}
-                        title={`Nota ${note?.id}`}
-                        className="h-full w-full bg-white"
-                    />
-                ) : null}
+        <main className="min-h-screen w-full bg-[#E6E9F3] px-0 py-0 sm:px-4 sm:py-4">
+            <section className="min-h-screen w-full border-0 bg-white shadow-[0_24px_70px_rgba(15,62,106,0.10)]">
+                <header className="flex flex-col gap-3 border-b border-slate-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                    <div className="min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-600">
+                            Nota en PDF
+                        </p>
+                        <h1 className="mt-1 flex items-center gap-2 text-base font-semibold text-slate-800 sm:text-lg">
+                            <FileText size={18} />
+                            <span className="truncate">{note?.titulo || `Nota ${note?.id ?? ""}`}</span>
+                        </h1>
+                    </div>
+
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleOpenPdf}
+                            className="h-11 rounded-xl border-slate-200 px-4"
+                        >
+                            <ExternalLink size={16} />
+                            Abrir PDF
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={handleDownload}
+                            className="h-11 rounded-xl bg-[linear-gradient(135deg,#2177d5,#2db6d5)] px-4 text-white hover:opacity-95"
+                        >
+                            <Download size={16} />
+                            Descargar PDF
+                        </Button>
+                    </div>
+                </header>
+
+                <div className="border-b border-slate-100 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600 sm:px-6">
+                    Si en tu celular no se visualiza dentro de la página, usá "Abrir PDF" o "Descargar PDF".
+                </div>
+
+                <div className="h-[calc(100dvh-10.5rem)] min-h-[560px] w-full bg-slate-100">
+                    {pdfUrl ? (
+                        <object
+                            data={pdfUrl}
+                            type="application/pdf"
+                            className="h-full w-full bg-white"
+                            aria-label={`Nota ${note?.id}`}
+                        >
+                            <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
+                                <FileText className="text-slate-400" size={38} />
+                                <div className="max-w-md">
+                                    <p className="text-base font-semibold text-slate-700">
+                                        No se pudo mostrar el PDF dentro del navegador.
+                                    </p>
+                                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                                        En algunos celulares el visor interno no es compatible.
+                                    </p>
+                                </div>
+                                <div className="flex w-full max-w-sm flex-col gap-3 sm:flex-row">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={handleOpenPdf}
+                                        className="h-11 flex-1 rounded-xl border-slate-200 px-4"
+                                    >
+                                        <ExternalLink size={16} />
+                                        Abrir PDF
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        onClick={handleDownload}
+                                        className="h-11 flex-1 rounded-xl bg-[linear-gradient(135deg,#2177d5,#2db6d5)] px-4 text-white hover:opacity-95"
+                                    >
+                                        <Download size={16} />
+                                        Descargar PDF
+                                    </Button>
+                                </div>
+                            </div>
+                        </object>
+                    ) : null}
+                </div>
             </section>
         </main>
     );
