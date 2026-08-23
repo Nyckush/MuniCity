@@ -524,6 +524,8 @@ a {
     font-size: clamp(2.7rem, 6vw, 4.35rem);
     line-height: 0.98;
     letter-spacing: -0.06em;
+    color: #173f6b;
+    text-shadow: 0 10px 24px rgba(35, 119, 215, 0.12);
 }
 
 .hero-copy p {
@@ -962,6 +964,10 @@ a {
 }
 
 @media (max-width: 720px) {
+    .hero-section {
+        padding-top: 0.35rem;
+    }
+
     .public-header__inner {
         min-height: 72px;
         padding: 0.75rem 0;
@@ -995,6 +1001,8 @@ a {
         max-width: none;
         font-size: clamp(1.9rem, 8.6vw, 2.7rem);
         line-height: 1.08;
+        color: #184a79;
+        text-shadow: 0 8px 20px rgba(35, 119, 215, 0.1);
     }
 
     .hero-copy p {
@@ -1011,7 +1019,7 @@ a {
 
     .hero-actions--mobile {
         display: flex;
-        margin-top: 1rem;
+        margin-top: 0;
     }
 
     .cta-primary,
@@ -1025,8 +1033,24 @@ a {
 
     .hero-band {
         background:
-            radial-gradient(circle at center top, rgba(130, 192, 246, 0.15), transparent 28%),
+            radial-gradient(circle at center top, rgba(130, 192, 246, 0.08), transparent 22%),
             linear-gradient(180deg, #f3fbff 0%, #eef8ff 55%, #fbfdff 100%);
+    }
+
+    .hero-band::before,
+    .hero-band::after {
+        top: -4rem;
+        width: 10rem;
+        height: 6rem;
+        opacity: 0.82;
+    }
+
+    .hero-band::before {
+        left: -4.75rem;
+    }
+
+    .hero-band::after {
+        right: -4.75rem;
     }
 
     .hero-visual__frame {
