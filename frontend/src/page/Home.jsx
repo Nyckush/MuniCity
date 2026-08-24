@@ -5,8 +5,10 @@ import {
     Building2,
     CheckCircle2,
     ClipboardList,
+    LogIn,
     Menu,
     MapPinned,
+    UserPlus,
     Vote,
     X,
 } from "lucide-react";
@@ -219,6 +221,7 @@ export default function Home() {
 
                         <div className="hero-actions hero-actions--desktop">
                             <Link className="cta-primary" to="/register">
+                                <UserPlus size={18} />
                                 Registrate ahora
                                 <ArrowRight size={18} />
                             </Link>
@@ -229,7 +232,7 @@ export default function Home() {
                         <div className="hero-visual__frame">
                             <img
                                 className="hero-visual__image"
-                                src="/fondo.png"
+                                src="/fondo.webp"
                                 alt=""
                             />
                         </div>
@@ -237,8 +240,13 @@ export default function Home() {
 
                     <div className="hero-actions hero-actions--mobile">
                         <Link className="cta-primary" to="/register">
+                            <UserPlus size={18} />
                             Registrate ahora
                             <ArrowRight size={18} />
+                        </Link>
+                        <Link className="cta-secondary" to="/login">
+                            <LogIn size={18} />
+                            Iniciar sesión
                         </Link>
                     </div>
                 </div>

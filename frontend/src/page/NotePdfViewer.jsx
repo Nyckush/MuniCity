@@ -121,12 +121,12 @@ export default function NotePdfViewer() {
                         </h1>
                     </div>
 
-                    <div className="flex flex-col gap-2 sm:flex-row">
+                    <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-stretch">
                         <Button
                             type="button"
                             variant="outline"
                             onClick={handleOpenPdf}
-                            className="h-11 rounded-xl border-slate-200 px-4"
+                            className="h-11 w-full rounded-xl border-slate-200 px-4 sm:w-auto"
                         >
                             <ExternalLink size={16} />
                             Abrir PDF
@@ -134,7 +134,7 @@ export default function NotePdfViewer() {
                         <Button
                             type="button"
                             onClick={handleDownload}
-                            className="h-11 rounded-xl bg-[linear-gradient(135deg,#2177d5,#2db6d5)] px-4 text-white hover:opacity-95"
+                            className="h-11 w-full rounded-xl bg-[linear-gradient(135deg,#2177d5,#2db6d5)] px-4 text-white hover:opacity-95 sm:w-auto"
                         >
                             <Download size={16} />
                             Descargar PDF
@@ -163,25 +163,6 @@ export default function NotePdfViewer() {
                                     <p className="mt-2 text-sm leading-6 text-slate-500">
                                         En algunos celulares el visor interno no es compatible.
                                     </p>
-                                </div>
-                                <div className="flex w-full max-w-sm flex-col gap-3 sm:flex-row">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={handleOpenPdf}
-                                        className="h-11 flex-1 rounded-xl border-slate-200 px-4"
-                                    >
-                                        <ExternalLink size={16} />
-                                        Abrir PDF
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        onClick={handleDownload}
-                                        className="h-11 flex-1 rounded-xl bg-[linear-gradient(135deg,#2177d5,#2db6d5)] px-4 text-white hover:opacity-95"
-                                    >
-                                        <Download size={16} />
-                                        Descargar PDF
-                                    </Button>
                                 </div>
                             </div>
                         </object>
